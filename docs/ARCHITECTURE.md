@@ -1,6 +1,6 @@
 # Portside architecture
 
-Portside is one menu bar process that runs three things for you. A bundled Caddy reverse proxy routes each site's host, such as `smartcity.localhost`, to a local port. A process manager starts your dev commands in their own process groups and keeps their output. A DNS server answers names under the chosen domain suffix with a loopback address, and it runs only when macOS does not already resolve that suffix. This document describes how those parts fit together, as the code implements them. [`PLAN.md`](PLAN.md) holds the original design and the roadmap.
+Portside is one menu bar process that runs three things for you. A bundled Caddy reverse proxy routes each site's host, such as `blog.localhost`, to a local port. A process manager starts your dev commands in their own process groups and keeps their output. A DNS server answers names under the chosen domain suffix with a loopback address, and it runs only when macOS does not already resolve that suffix. This document describes how those parts fit together, as the code implements them. [`PLAN.md`](PLAN.md) holds the original design and the roadmap.
 
 ![Request flow for .test from the browser through Portside's DNS server and Caddy to the dev servers](../assets/diagram.svg)
 
@@ -61,13 +61,13 @@ A resolver file decides the strategy on its own. Herd's `/etc/resolver/test` mak
 
 ## Request flow
 
-1. The browser asks macOS for `smartcity.localhost`.
-2. With the `system` strategy, macOS answers `127.0.0.1` and `::1` itself. With `portsideDNS`, for example for `smartcity.test`, macOS reads `/etc/resolver/test`, which says `nameserver 127.0.0.1` and `port 35353`, and sends the query to Portside's `DNSServer`. `DNSServer` answers `127.0.0.1` for A queries and `::1` for AAAA queries.
-3. The browser connects to port 80 on loopback and sends `Host: smartcity.localhost`.
+1. The browser asks macOS for `blog.localhost`.
+2. With the `system` strategy, macOS answers `127.0.0.1` and `::1` itself. With `portsideDNS`, for example for `blog.test`, macOS reads `/etc/resolver/test`, which says `nameserver 127.0.0.1` and `port 35353`, and sends the query to Portside's `DNSServer`. `DNSServer` answers `127.0.0.1` for A queries and `::1` for AAAA queries.
+3. The browser connects to port 80 on loopback and sends `Host: blog.localhost`.
 4. Caddy matches the exact host and proxies the request to the process's upstream, for example `localhost:5474`. WebSocket upgrades pass through, so Vite HMR works.
-5. `api.smartcity.localhost` matches its own route and goes to `localhost:8185`.
+5. `api.blog.localhost` matches its own route and goes to `localhost:8185`.
 
-If you change the proxy port in Settings, URLs gain the port, for example `http://smartcity.localhost:8080`. `AppSettings.url(forDomain:)` builds every URL the app shows or opens.
+If you change the proxy port in Settings, URLs gain the port, for example `http://blog.localhost:8080`. `AppSettings.url(forDomain:)` builds every URL the app shows or opens.
 
 ## DNS
 

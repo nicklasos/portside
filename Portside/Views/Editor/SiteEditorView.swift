@@ -96,7 +96,7 @@ struct SiteEditorView: View {
                 Text("Name").frame(width: 70, alignment: .trailing).gridColumnAlignment(.trailing)
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
-                        TextField("", text: name, prompt: Text("smartcity"))
+                        TextField("", text: name, prompt: Text("blog"))
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 220)
                         Text(controller.settings.domainSuffix.display).foregroundStyle(.secondary)
@@ -117,7 +117,7 @@ struct SiteEditorView: View {
                 Text("Folder").frame(width: 70, alignment: .trailing)
                 FolderPicker(
                     path: $draft.folder,
-                    placeholder: "~/Projects/smartcity",
+                    placeholder: "~/Projects/blog",
                     error: draft.folder.isEmpty ? nil : issues.first { $0.field == .folder }?.message
                 ) { path in
                     if draft.name.isEmpty {

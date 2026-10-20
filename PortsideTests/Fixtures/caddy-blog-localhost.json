@@ -33,8 +33,8 @@
                 "match" : [
                   {
                     "host" : [
-                      "api.smartcity.localhost",
-                      "smartcity.localhost"
+                      "api.blog.localhost",
+                      "blog.localhost"
                     ]
                   }
                 ],
@@ -98,7 +98,7 @@
               "match" : [
                 {
                   "host" : [
-                    "api.smartcity.localhost"
+                    "api.blog.localhost"
                   ]
                 }
               ],
@@ -131,7 +131,7 @@
               "match" : [
                 {
                   "host" : [
-                    "smartcity.localhost"
+                    "blog.localhost"
                   ]
                 }
               ],

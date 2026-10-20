@@ -27,7 +27,7 @@ final class ProcessManagerTests: XCTestCase {
     }
 
     private func makeSite(_ command: String, extras: [ProcessConfig] = []) -> Site {
-        Site(name: "smartcity", folder: dir.path, main: ProcessConfig(label: "Frontend", command: command, port: 5474), extras: extras)
+        Site(name: "blog", folder: dir.path, main: ProcessConfig(label: "Frontend", command: command, port: 5474), extras: extras)
     }
 
     private func waitUntil(_ what: String, timeout: TimeInterval = 5, _ condition: () -> Bool) async throws {
@@ -120,7 +120,7 @@ final class ProcessManagerTests: XCTestCase {
         await manager.start(site)
         try await waitUntil("exit") { manager.state(of: site.main.id) == .exited(code: 0) }
         let buffer = manager.buffer(for: site.main.id)
-        XCTAssertEqual(printed("env", in: buffer), ["5474 localhost 1 smartcity http://smartcity.localhost bar xterm-256color 1"])
+        XCTAssertEqual(printed("env", in: buffer), ["5474 localhost 1 blog http://blog.localhost bar xterm-256color 1"])
         XCTAssertEqual(printed("cwd", in: buffer).map { URL(fileURLWithPath: $0).resolvingSymlinksInPath() }, [dir.resolvingSymlinksInPath()])
     }
 

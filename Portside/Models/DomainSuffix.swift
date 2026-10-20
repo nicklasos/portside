@@ -1,6 +1,6 @@
 import Foundation
 
-/// The top-level label every site lives under, such as `localhost` in `smartcity.localhost`.
+/// The top-level label every site lives under, such as `localhost` in `blog.localhost`.
 /// The only ways to get one are the presets and `custom(_:)`, so a value is always usable.
 struct DomainSuffix: Hashable, Codable {
     let label: String

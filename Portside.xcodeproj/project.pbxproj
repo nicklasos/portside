@@ -21,14 +21,15 @@
 		3CCACB1C97D0123DE0A54FE4 /* PortsideControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E85D59499ADE758CD5C70BF4 /* PortsideControllerTests.swift */; };
 		47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3345620368D6CD91E90311C1 /* AppSettings.swift */; };
 		515F4341AF8F73B93033F264 /* SuffixCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528953F20C84B2F6EE055630 /* SuffixCheckTests.swift */; };
+		53C810A69591CEF859E8C847 /* caddy-blog.json in Resources */ = {isa = PBXBuildFile; fileRef = 955EDE762406E3E2C699A450 /* caddy-blog.json */; };
 		53EA663864055AB67FD78163 /* ProcessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21175A98E65DE30E0F070E2 /* ProcessManager.swift */; };
 		53F8EB82A887BE332F26B899 /* StatusDot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 569D3B82FCEADAC5D817C283 /* StatusDot.swift */; };
 		59EEC7E1846A6C46FD7C651A /* ManagedProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753455F6BF71FBDE7D950E84 /* ManagedProcess.swift */; };
 		5EB210EE6B5B8D8D42BA314C /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = A3BCBDF791C4278E30A0B91E /* NIOCore */; };
+		61BAB0E41931CA4FC182AC99 /* caddy-blog-localhost.json in Resources */ = {isa = PBXBuildFile; fileRef = 2B3DE47F84AFEB286BC1EC6B /* caddy-blog-localhost.json */; };
 		67A3C91F9D1A67F74599AFD8 /* UpdaterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDD204E84FBA74747C50C60 /* UpdaterService.swift */; };
 		689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B75ED958BAF6F739693E706A /* SiteStoreTests.swift */; };
 		6A4F12E844DA8DBE2FE9F9CC /* ResolverInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8F2D38E93C20174A58FDA9 /* ResolverInstaller.swift */; };
-		6A987D0A32A34F1848F13358 /* caddy-smartcity-localhost.json in Resources */ = {isa = PBXBuildFile; fileRef = 5DCCA3D8564C1B4B4358DF5C /* caddy-smartcity-localhost.json */; };
 		6F4BE6CFF343ADAA8B5ACE51 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650904D334B4EDC791F61EE5 /* OnboardingView.swift */; };
 		700E3B06411E0BB6EDFBB5F4 /* ProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4876EF5F12CB582CF7334AB /* ProxyManager.swift */; };
 		71F5BA90FCC26C045875CCFE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE7F056C6696C3BCD6DE74EC /* Assets.xcassets */; };
@@ -62,7 +63,6 @@
 		E1091483F80FEACBA38CE70A /* SiteValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3371F8479F06873CE6C9225 /* SiteValidation.swift */; };
 		E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB013570A77DEFBE17D837C2 /* Site.swift */; };
 		EA98E2F65895F55F4C9B0F16 /* LogsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B466E3DDB27C5CE169E06D9 /* LogsWindow.swift */; };
-		F6F7CF1672AB4EA42150AE23 /* caddy-smartcity.json in Resources */ = {isa = PBXBuildFile; fileRef = 2C87E74022493205867441CC /* caddy-smartcity.json */; };
 		F9031FD8A8FD0223B0CCD184 /* caddy-static-disabled.json in Resources */ = {isa = PBXBuildFile; fileRef = 7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */; };
 		F98FD6DBC7334F595CDAA4F0 /* LogBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE921757008CF0B17FC9AC8C /* LogBuffer.swift */; };
 		FD5664646C7870334E4E2912 /* DomainSuffix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0432C68AD95AEF901F67FC47 /* DomainSuffix.swift */; };
@@ -94,8 +94,8 @@
 		190DAA0353D86872275C2476 /* Portside.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Portside.entitlements; sourceTree = "<group>"; };
 		1F20E44E4E00039E06218385 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1FFFE619613302A6BE7C2CC9 /* LogTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTextView.swift; sourceTree = "<group>"; };
+		2B3DE47F84AFEB286BC1EC6B /* caddy-blog-localhost.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-blog-localhost.json"; sourceTree = "<group>"; };
 		2BDB27019664BB31F509D511 /* SiteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteEditorView.swift; sourceTree = "<group>"; };
-		2C87E74022493205867441CC /* caddy-smartcity.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-smartcity.json"; sourceTree = "<group>"; };
 		2FA92A86C2BC35736B26C8BF /* ResolverSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverSetupView.swift; sourceTree = "<group>"; };
 		3345620368D6CD91E90311C1 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		365678D7E43493546B0296BE /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
@@ -107,7 +107,6 @@
 		528953F20C84B2F6EE055630 /* SuffixCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuffixCheckTests.swift; sourceTree = "<group>"; };
 		55C00B2F242EFCA6688F4557 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		569D3B82FCEADAC5D817C283 /* StatusDot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusDot.swift; sourceTree = "<group>"; };
-		5DCCA3D8564C1B4B4358DF5C /* caddy-smartcity-localhost.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-smartcity-localhost.json"; sourceTree = "<group>"; };
 		5E4F79E93C4282F89A51920A /* DebugLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugLaunch.swift; sourceTree = "<group>"; };
 		650904D334B4EDC791F61EE5 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		693F1329B8E0E6246DD06F45 /* Portside.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portside.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,6 +118,7 @@
 		8BD92124D73C1E797842E28D /* AppPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPaths.swift; sourceTree = "<group>"; };
 		8D85F66C6944538093A05308 /* FolderPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPicker.swift; sourceTree = "<group>"; };
 		9270A7646452D32DB6A624FC /* SiteStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStatus.swift; sourceTree = "<group>"; };
+		955EDE762406E3E2C699A450 /* caddy-blog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-blog.json"; sourceTree = "<group>"; };
 		95E46562988127AD742D4515 /* caddy-empty.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-empty.json"; sourceTree = "<group>"; };
 		967FFCE007FFC14C518701A8 /* AccessLogTail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessLogTail.swift; sourceTree = "<group>"; };
 		9F227F559FF348948BFE484A /* SuffixCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuffixCheck.swift; sourceTree = "<group>"; };
@@ -223,10 +223,10 @@
 			isa = PBXGroup;
 			children = (
 				CF3E75E21F471F440D47239D /* caddy-all-8080.json */,
+				2B3DE47F84AFEB286BC1EC6B /* caddy-blog-localhost.json */,
+				955EDE762406E3E2C699A450 /* caddy-blog.json */,
 				95E46562988127AD742D4515 /* caddy-empty.json */,
 				AB7C1FBA86E85CFC2E9B1C19 /* caddy-preserve-host.json */,
-				5DCCA3D8564C1B4B4358DF5C /* caddy-smartcity-localhost.json */,
-				2C87E74022493205867441CC /* caddy-smartcity.json */,
 				7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */,
 				0E955A32D2B0FE5DF36D8FA9 /* caddy-static-enabled.json */,
 			);
@@ -430,10 +430,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A9322FAF6AFAE29A4E8BB32C /* caddy-all-8080.json in Resources */,
+				61BAB0E41931CA4FC182AC99 /* caddy-blog-localhost.json in Resources */,
+				53C810A69591CEF859E8C847 /* caddy-blog.json in Resources */,
 				2737FA2475F14F3CF1945D85 /* caddy-empty.json in Resources */,
 				ADFB3CB8BBE8766C0505B358 /* caddy-preserve-host.json in Resources */,
-				6A987D0A32A34F1848F13358 /* caddy-smartcity-localhost.json in Resources */,
-				F6F7CF1672AB4EA42150AE23 /* caddy-smartcity.json in Resources */,
 				F9031FD8A8FD0223B0CCD184 /* caddy-static-disabled.json in Resources */,
 				725E316DDF0AB233B7CDEE12 /* caddy-static-enabled.json in Resources */,
 			);

@@ -106,7 +106,7 @@ struct DomainSuffixPicker: View {
 
     private var preview: String {
         guard let suffix = draft.suffix else { return " " }
-        return controller.settings.url(forDomain: "smartcity.\(suffix.label)").absoluteString
+        return controller.settings.url(forDomain: "blog.\(suffix.label)").absoluteString
     }
 
     private func option(_ choice: DomainSuffixDraft.Choice, title: String, badge: String? = nil, @ViewBuilder content: () -> some View) -> some View {

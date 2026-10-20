@@ -34,8 +34,8 @@ These tests compare the builder's output byte for byte with the golden files in 
 
 | Test | Checks |
 | --- | --- |
-| `testPlanExampleSmartcityWithApiExtra` | A site with an `api` extra produces the self-test route, two proxy routes, the 502 error route, and the 404 fallback. |
-| `testLocalhostSuffixMatchesLocalhostHosts` | The same site under `.localhost` matches `smartcity.localhost` and `api.smartcity.localhost`. |
+| `testBlogWithApiExtra` | A site with an `api` extra produces the self-test route, two proxy routes, the 502 error route, and the 404 fallback. |
+| `testLocalhostSuffixMatchesLocalhostHosts` | The same site under `.localhost` matches `blog.localhost` and `api.blog.localhost`. |
 | `testCustomSuffixRoutesStaticSiteAndItsAccessLog` | Under `.loc`, every host ends in `.loc`. |
 | `testPreserveHostPassesOriginalHost` | A process with `preserveHost` gets no `Host` rewrite. |
 | `testStaticSiteEnabledServesFolderWithAccessLog` | An enabled static site gets a `file_server` route and its own access log. |
@@ -57,7 +57,7 @@ These tests compare the builder's output byte for byte with the golden files in 
 | `testUppercaseNameMatchesAndQuestionIsEchoedVerbatim` | Matching ignores case, and the reply echoes the question as sent. |
 | `testNameOutsideTestIsNXDomainWithoutAuthority` | Names outside `.test` get NXDOMAIN. |
 | `testNameThatOnlyContainsTestIsNotInZone` | A name such as `test.example` is not in the zone. |
-| `testZoneIsAParameter` | A server for `localhost` answers `smartcity.localhost`, rejects `.test` names, and a `loc` server answers `portside-selftest.loc` with `127.0.0.53`. |
+| `testZoneIsAParameter` | A server for `localhost` answers `blog.localhost`, rejects `.test` names, and a `loc` server answers `portside-selftest.loc` with `127.0.0.53`. |
 | `testMalformedPacketsAreDropped` | Short, truncated, and malformed packets get no reply. |
 | `testServesQueriesOverUDP` | A started server answers a real UDP query. |
 | `testResolverContentCheck` | `ResolverInstaller.status` reports installed, missing, and mismatched files. |
@@ -162,7 +162,7 @@ Run this checklist before a release, on a release build from [`scripts/build-rel
 
 - [ ] Create a new macOS user account in **System Settings > Users & Groups** and log in to it. A fresh account has no Portside settings.
 - [ ] Remove an old Portside resolver file, if there is one: `sudo rm -f /etc/resolver/test`. Skip this step on a Mac where Herd or Valet owns the file.
-- [ ] Create a Vite project: `npm create vite@latest smartcity -- --template vanilla`, then `cd smartcity && npm install`.
+- [ ] Create a Vite project: `npm create vite@latest blog -- --template vanilla`, then `cd blog && npm install`.
 - [ ] Check that port 80 is free: `lsof -nP -iTCP:80 -sTCP:LISTEN` prints nothing.
 
 ### First run
@@ -181,47 +181,47 @@ If the window says this Mac does not resolve `.localhost`, follow the `.test` st
 - [ ] In **Settings > Network**, choose `.test` and click **Use .test**. The resolver window explains `/etc/resolver/test`.
 - [ ] Click **Install resolver** and enter your administrator password.
 - [ ] `cat /etc/resolver/test` prints `nameserver 127.0.0.1` and `port 35353`.
-- [ ] `dig @127.0.0.1 -p 35353 smartcity.test +short` prints `127.0.0.1`.
+- [ ] `dig @127.0.0.1 -p 35353 blog.test +short` prints `127.0.0.1`.
 - [ ] `dig @127.0.0.1 -p 35353 portside-selftest.test +short` prints `127.0.0.53`.
-- [ ] `dscacheutil -q host -a name smartcity.test` lists `127.0.0.1`. This proves macOS sends `.test` lookups to Portside.
+- [ ] `dscacheutil -q host -a name blog.test` lists `127.0.0.1`. This proves macOS sends `.test` lookups to Portside.
 - [ ] **Test now** in **Settings > Network** shows "Works end to end".
 - [ ] Choose `.localhost` again. Settings offers **Remove /etc/resolver/test…**. Click it and enter your password. The file is gone, and `lsof -nP -iUDP:35353` prints nothing.
 
 ### A Vite site
 
-- [ ] Click **Add Site**. Enter the name `smartcity`, choose the Vite project folder, enter the command `npm run dev -- --port 5474 --strictPort`, and enter the port `5474`. Click **Save**.
+- [ ] Click **Add Site**. Enter the name `blog`, choose the Vite project folder, enter the command `npm run dev -- --port 5474 --strictPort`, and enter the port `5474`. Click **Save**.
 - [ ] Click the start button. The dot pulses while the site starts, then turns green.
 - [ ] Open the logs window. The Vite banner appears with its colors.
-- [ ] `curl -s -o /dev/null -w '%{http_code}\n' http://smartcity.localhost` prints `200`.
-- [ ] Open `http://smartcity.localhost` in Safari and in Chrome. Both show the Vite page with no "Blocked request" error.
+- [ ] `curl -s -o /dev/null -w '%{http_code}\n' http://blog.localhost` prints `200`.
+- [ ] Open `http://blog.localhost` in Safari and in Chrome. Both show the Vite page with no "Blocked request" error.
 - [ ] Edit `main.js` and save. Both browsers update without a full reload. This proves the HMR WebSocket passes through Caddy.
 
 ### An extra process on a subdomain
 
 - [ ] Edit the site. Add a process with the label `API`, the subdomain `api`, the command `python3 -m http.server 8185`, and the port `8185`. Save while the site runs.
 - [ ] Only the new API process starts. The Vite process keeps its pid, which the `▶` line in its log shows.
-- [ ] `curl -s http://api.smartcity.localhost/ | head -n 3` prints the directory listing from Python.
+- [ ] `curl -s http://api.blog.localhost/ | head -n 3` prints the directory listing from Python.
 - [ ] Find the API's pid in its log and run `kill <pid>`. The site's dot turns red, the API row shows the exit code, and a notification appears.
 
 ### Stopped and unknown sites
 
 - [ ] Stop the site. The dot turns grey.
 - [ ] `lsof -nP -iTCP:5474 -sTCP:LISTEN` and `lsof -nP -iTCP:8185 -sTCP:LISTEN` print nothing.
-- [ ] Open `http://smartcity.localhost`. A Portside page says the site is not running and to start it from the Portside menu bar. `curl` reports status `502`.
+- [ ] Open `http://blog.localhost`. A Portside page says the site is not running and to start it from the Portside menu bar. `curl` reports status `502`.
 - [ ] Open `http://nothing-here.localhost`. A Portside page says there is no site for this host. `curl` reports status `404`.
 
 ### A static site
 
-- [ ] Create a folder with an `index.html`. Add a site named `blog` with that folder, an empty command, and any port.
-- [ ] Turn the site on. `http://blog.localhost` shows the `index.html`.
-- [ ] Turn the site off. `http://blog.localhost` shows the not-running page, and `curl` reports status `503`.
+- [ ] Create a folder with an `index.html`. Add a site named `docs` with that folder, an empty command, and any port.
+- [ ] Turn the site on. `http://docs.localhost` shows the `index.html`.
+- [ ] Turn the site off. `http://docs.localhost` shows the not-running page, and `curl` reports status `503`.
 
 ### Port 80 is busy
 
 - [ ] Quit Portside. Run `python3 -m http.server 80` in a terminal, then open Portside.
 - [ ] Portside says port 80 is in use and names the Python process and its pid.
 - [ ] In **Settings > Network**, set the proxy port to `8080`. Every URL in the menu now ends in `:8080`.
-- [ ] `curl -s -o /dev/null -w '%{http_code}\n' http://smartcity.localhost:8080` prints `200` while the site runs.
+- [ ] `curl -s -o /dev/null -w '%{http_code}\n' http://blog.localhost:8080` prints `200` while the site runs.
 - [ ] Stop the Python server and set the proxy port back to `80`.
 
 ### Laravel Herd or Valet
@@ -229,7 +229,7 @@ If the window says this Mac does not resolve `.localhost`, follow the `.test` st
 Run this section on a Mac with Herd or Valet installed. Both write `nameserver 127.0.0.1` to `/etc/resolver/test` and both use port 80.
 
 - [ ] With `.localhost` chosen, Portside does not mention `/etc/resolver/test`, and the `.test` option in **Settings > Network** shows the Herd file with a takeover warning.
-- [ ] Portside reports port 80 in use by Herd's nginx. Move the proxy to port 8080 and check that `http://smartcity.localhost:8080` works while Herd sites still resolve.
+- [ ] Portside reports port 80 in use by Herd's nginx. Move the proxy to port 8080 and check that `http://blog.localhost:8080` works while Herd sites still resolve.
 - [ ] Choose `.test`. Portside says the resolver file belongs to another tool and asks before it replaces the file.
 - [ ] Decline. `.test` lookups keep going to Herd, and **Test now** reports that `portside-selftest.test` does not resolve through Portside's DNS server.
 - [ ] Repair the resolver from **Settings** and accept. `cat /etc/resolver/test` shows `port 35353`, and **Test now** passes.

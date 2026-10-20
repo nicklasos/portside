@@ -33,9 +33,9 @@
                 "match" : [
                   {
                     "host" : [
-                      "api.smartcity.test",
-                      "legacy.test",
-                      "smartcity.test"
+                      "api.blog.test",
+                      "blog.test",
+                      "legacy.test"
                     ]
                   }
                 ],
@@ -107,7 +107,40 @@
               "match" : [
                 {
                   "host" : [
-                    "api.smartcity.test"
+                    "api.blog.test"
+                  ]
+                }
+              ],
+              "terminal" : true
+            },
+            {
+              "handle" : [
+                {
+                  "flush_interval" : -1,
+                  "handler" : "reverse_proxy",
+                  "headers" : {
+                    "request" : {
+                      "set" : {
+                        "Host" : [
+                          "{http.reverse_proxy.upstream.hostport}"
+                        ],
+                        "X-Forwarded-Host" : [
+                          "{http.request.hostport}"
+                        ]
+                      }
+                    }
+                  },
+                  "upstreams" : [
+                    {
+                      "dial" : "localhost:5474"
+                    }
+                  ]
+                }
+              ],
+              "match" : [
+                {
+                  "host" : [
+                    "blog.test"
                   ]
                 }
               ],
@@ -148,39 +181,6 @@
                 {
                   "host" : [
                     "legacy.test"
-                  ]
-                }
-              ],
-              "terminal" : true
-            },
-            {
-              "handle" : [
-                {
-                  "flush_interval" : -1,
-                  "handler" : "reverse_proxy",
-                  "headers" : {
-                    "request" : {
-                      "set" : {
-                        "Host" : [
-                          "{http.reverse_proxy.upstream.hostport}"
-                        ],
-                        "X-Forwarded-Host" : [
-                          "{http.request.hostport}"
-                        ]
-                      }
-                    }
-                  },
-                  "upstreams" : [
-                    {
-                      "dial" : "localhost:5474"
-                    }
-                  ]
-                }
-              ],
-              "match" : [
-                {
-                  "host" : [
-                    "smartcity.test"
                   ]
                 }
               ],

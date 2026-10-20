@@ -34,7 +34,7 @@ final class AppSettings {
         hasChosenDomainSuffix = defaults.bool(forKey: Keys.hasChosenDomainSuffix)
     }
 
-    /// `smartcity.localhost` on port 80, `smartcity.localhost:8080` otherwise.
+    /// `blog.localhost` on port 80, `blog.localhost:8080` otherwise.
     func url(forDomain domain: String) -> URL {
         URL(string: proxyPort == 80 ? "http://\(domain)" : "http://\(domain):\(proxyPort)")!
     }

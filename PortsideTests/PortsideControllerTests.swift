@@ -19,7 +19,7 @@ final class PortsideControllerTests: XCTestCase {
     }
 
     private func makeSite(main: String = "sleep 30", api: String = "sleep 30") -> Site {
-        Site(name: "smartcity", folder: dir.path,
+        Site(name: "blog", folder: dir.path,
              main: ProcessConfig(label: "Frontend", command: main, port: 5474),
              extras: [ProcessConfig(label: "API", command: api, port: 8185, subdomain: "api")])
     }
@@ -55,7 +55,7 @@ final class PortsideControllerTests: XCTestCase {
     func testSavingANewSitePersistsWithoutNotice() async throws {
         let notice = try await controller.save(edited: makeSite())
         XCTAssertNil(notice)
-        XCTAssertEqual(SiteStore(persistence: Persistence(fileURL: dir.appendingPathComponent("support/sites.json"))).sites.map(\.name), ["smartcity"])
+        XCTAssertEqual(SiteStore(persistence: Persistence(fileURL: dir.appendingPathComponent("support/sites.json"))).sites.map(\.name), ["blog"])
     }
 
     func testSavingInvalidSiteThrowsAndKeepsStore() async {
@@ -107,7 +107,7 @@ final class PortsideControllerTests: XCTestCase {
     }
 
     func testStaticSiteToggleEnablesItForTheProxy() async throws {
-        let site = Site(name: "blog", folder: dir.path, main: ProcessConfig(label: "", command: "", port: 1))
+        let site = Site(name: "docs", folder: dir.path, main: ProcessConfig(label: "", command: "", port: 1))
         try await controller.save(edited: site)
         await controller.toggle(site)
         XCTAssertEqual(controller.processes.enabledStaticSites, [site.id])
@@ -118,9 +118,9 @@ final class PortsideControllerTests: XCTestCase {
 
     func testURLsCarryANonDefaultProxyPort() async throws {
         let site = makeSite()
-        XCTAssertEqual(controller.url(for: site)?.absoluteString, "http://smartcity.localhost")
+        XCTAssertEqual(controller.url(for: site)?.absoluteString, "http://blog.localhost")
         controller.settings.proxyPort = 8080
-        XCTAssertEqual(controller.url(for: site, process: site.extras[0])?.absoluteString, "http://api.smartcity.localhost:8080")
+        XCTAssertEqual(controller.url(for: site, process: site.extras[0])?.absoluteString, "http://api.blog.localhost:8080")
     }
 
     /// macOS answers loopback only for names under `systemResolved`.
@@ -153,7 +153,7 @@ final class PortsideControllerTests: XCTestCase {
         XCTAssertGreaterThan(port, 0)
         XCTAssertTrue(controller.needsResolverSetup)
         XCTAssertTrue(controller.shouldPromptForResolver)
-        XCTAssertEqual(controller.url(for: makeSite())?.absoluteString, "http://smartcity.test")
+        XCTAssertEqual(controller.url(for: makeSite())?.absoluteString, "http://blog.test")
 
         await controller.chooseDomainSuffix(.localhost)
         XCTAssertEqual(controller.dnsState, .stopped, "switching to a system-resolved suffix stops the server")

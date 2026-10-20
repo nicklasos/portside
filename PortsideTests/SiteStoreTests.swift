@@ -18,7 +18,7 @@ final class SiteStoreTests: XCTestCase {
         SiteStore(persistence: Persistence(fileURL: dir.appendingPathComponent("sites.json")))
     }
 
-    private func makeSite(_ name: String = "smartcity", port: Int = 5474) -> Site {
+    private func makeSite(_ name: String = "blog", port: Int = 5474) -> Site {
         Site(name: name, folder: dir.path,
              main: ProcessConfig(label: "Frontend", command: "make dev", port: port),
              extras: [ProcessConfig(label: "API", command: "make api", port: port + 1, subdomain: "api")])
@@ -82,7 +82,7 @@ final class SiteStoreTests: XCTestCase {
     func testSharedUpstreamIsWarningNotError() throws {
         let store = makeStore()
         try store.upsert(makeSite())
-        let other = makeSite("blog", port: 5474)
+        let other = makeSite("shop", port: 5474)
         let issues = store.issues(for: other)
         XCTAssertTrue(issues.contains { $0.severity == .warning })
         XCTAssertNoThrow(try store.upsert(other))
@@ -92,13 +92,13 @@ final class SiteStoreTests: XCTestCase {
         let store = makeStore()
         let site = try store.upsert(makeSite())
         let copy = try XCTUnwrap(store.duplicate(id: site.id))
-        XCTAssertEqual(copy.name, "smartcity-copy")
+        XCTAssertEqual(copy.name, "blog-copy")
         XCTAssertNotEqual(copy.main.id, site.main.id)
         XCTAssertEqual(store.sites.count, 2)
     }
 
     func testSanitizeLabel() {
-        XCTAssertEqual(SiteValidation.sanitizeLabel("Smart City_2!"), "smartcity2")
+        XCTAssertEqual(SiteValidation.sanitizeLabel("My CRM_2!"), "mycrm2")
     }
 
     func testSiteStatusDerivation() {

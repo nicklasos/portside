@@ -70,16 +70,16 @@ final class DomainSuffixTests: XCTestCase {
 
     func testDomainsDeriveFromNameSubdomainAndSuffix() throws {
         let site = Site(
-            name: "smartcity", folder: "/tmp",
+            name: "blog", folder: "/tmp",
             main: ProcessConfig(label: "Frontend", command: "make dev", port: 5474),
             extras: [
                 ProcessConfig(label: "API", command: "make api", port: 8185, subdomain: "api"),
                 ProcessConfig(label: "Worker", command: "make worker", port: 9000),
             ]
         )
-        XCTAssertEqual(site.domain(in: .localhost), "smartcity.localhost")
-        XCTAssertEqual(site.domain(for: site.main, in: .test), "smartcity.test")
-        XCTAssertEqual(site.domain(for: site.extras[0], in: .loc), "api.smartcity.loc")
+        XCTAssertEqual(site.domain(in: .localhost), "blog.localhost")
+        XCTAssertEqual(site.domain(for: site.main, in: .test), "blog.test")
+        XCTAssertEqual(site.domain(for: site.extras[0], in: .loc), "api.blog.loc")
         XCTAssertNil(site.domain(for: site.extras[1], in: .localhost), "no subdomain, no domain")
     }
 

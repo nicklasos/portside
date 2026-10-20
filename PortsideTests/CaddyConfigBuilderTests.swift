@@ -6,8 +6,8 @@ import XCTest
 final class CaddyConfigBuilderTests: XCTestCase {
     static let fixtureRoot = "/tmp/portside-fixtures"
 
-    private let smartcity = Site(
-        name: "smartcity", folder: "\(fixtureRoot)/smartcity",
+    private let blog = Site(
+        name: "blog", folder: "\(fixtureRoot)/blog",
         main: ProcessConfig(label: "Frontend", command: "make dev", port: 5474),
         extras: [
             ProcessConfig(label: "API", command: "make api", port: 8185, subdomain: "api"),
@@ -24,17 +24,17 @@ final class CaddyConfigBuilderTests: XCTestCase {
     )
     private let logs = URL(fileURLWithPath: "\(fixtureRoot)/logs")
 
-    func testPlanExampleSmartcityWithApiExtra() throws {
-        try assertGolden("smartcity", CaddyConfigBuilder.build(sites: [smartcity], suffix: .test, enabledStaticSites: [], proxyPort: 80, adminPort: 2019, logsDirectory: nil))
+    func testBlogWithApiExtra() throws {
+        try assertGolden("blog", CaddyConfigBuilder.build(sites: [blog], suffix: .test, enabledStaticSites: [], proxyPort: 80, adminPort: 2019, logsDirectory: nil))
     }
 
     func testLocalhostSuffixMatchesLocalhostHosts() throws {
-        try assertGolden("smartcity-localhost", CaddyConfigBuilder.build(sites: [smartcity], suffix: .localhost, enabledStaticSites: [], proxyPort: 80, adminPort: 2019, logsDirectory: nil))
+        try assertGolden("blog-localhost", CaddyConfigBuilder.build(sites: [blog], suffix: .localhost, enabledStaticSites: [], proxyPort: 80, adminPort: 2019, logsDirectory: nil))
     }
 
     func testCustomSuffixRoutesStaticSiteAndItsAccessLog() throws {
-        let routes = CaddyConfigBuilder.hostRoutes(sites: [smartcity, docs], suffix: .loc, enabledStaticSites: [docs.id], logging: false)
-        XCTAssertEqual(routes.map(\.host), ["api.smartcity.loc", "docs.loc", "smartcity.loc"])
+        let routes = CaddyConfigBuilder.hostRoutes(sites: [blog, docs], suffix: .loc, enabledStaticSites: [docs.id], logging: false)
+        XCTAssertEqual(routes.map(\.host), ["api.blog.loc", "blog.loc", "docs.loc"])
     }
 
     func testPreserveHostPassesOriginalHost() throws {
@@ -55,12 +55,12 @@ final class CaddyConfigBuilderTests: XCTestCase {
 
     /// The config used for the live proof: every route kind on an alternate proxy port.
     func testAllSitesOnAlternateProxyPort() throws {
-        try assertGolden("all-8080", CaddyConfigBuilder.build(sites: [smartcity, legacy, docs], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs))
+        try assertGolden("all-8080", CaddyConfigBuilder.build(sites: [blog, legacy, docs], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs))
     }
 
     func testOutputIsIndependentOfSiteOrder() {
-        let a = CaddyConfigBuilder.build(sites: [smartcity, legacy, docs], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
-        let b = CaddyConfigBuilder.build(sites: [docs, legacy, smartcity], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
+        let a = CaddyConfigBuilder.build(sites: [blog, legacy, docs], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
+        let b = CaddyConfigBuilder.build(sites: [docs, legacy, blog], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
         XCTAssertEqual(a, b)
     }
 

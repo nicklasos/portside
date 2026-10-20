@@ -15,15 +15,15 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/menubar.png" width="420" alt="The Portside menu bar popover with three sites: smartcity running, blog stopped, and crm with a crashed process">
+  <img src="assets/screenshots/menubar.png" width="420" alt="The Portside menu bar popover with three sites: blog running, shop stopped, and crm with a crashed process">
 </p>
 
 ## What it does
 
-- Maps `smartcity.localhost` to `localhost:5474`, and any other site name to the port you choose.
+- Maps `blog.localhost` to `localhost:5474`, and any other site name to the port you choose.
 - Starts and stops every process of a project with one click.
 - Shows each process's output in a tabbed log window, colors included.
-- Puts additional processes on subdomains, such as `api.smartcity.localhost` for an API on port 8185.
+- Puts additional processes on subdomains, such as `api.blog.localhost` for an API on port 8185.
 - Uses `.localhost` by default, which macOS resolves with no setup. You can choose `.test`, `.loc`, `.local`, or your own suffix instead.
 
 ## Install
@@ -52,17 +52,17 @@ A Homebrew cask is planned.
 </p>
 
 1. Click the Portside icon in the menu bar, then click **Add Site** (⌘N).
-2. Enter a name, such as `smartcity`, and choose the project folder. The site's domain is `smartcity.localhost`.
+2. Enter a name, such as `blog`, and choose the project folder. The site's domain is `blog.localhost`.
 3. Enter the command that starts your dev server, such as `npm run dev`, and the port it listens on, such as `5474`.
-4. To run an API or a worker too, click **Add** under **Additional processes**. Give it a subdomain, such as `api`, to reach it at `api.smartcity.localhost`.
-5. Click **Save**, click the start button on the site's row, and then click the open button. Your browser opens `http://smartcity.localhost`.
+4. To run an API or a worker too, click **Add** under **Additional processes**. Give it a subdomain, such as `api`, to reach it at `api.blog.localhost`.
+5. Click **Save**, click the start button on the site's row, and then click the open button. Your browser opens `http://blog.localhost`.
 
 Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each command. A command such as `npm run dev -- --port $PORT` stays in step with the port you entered. Leave the command empty to serve the folder as static files.
 
 ## How it works
 
 <p align="center">
-  <img src="assets/diagram.svg" width="800" alt="Diagram: the browser looks up smartcity.test, macOS asks Portside's DNS server through /etc/resolver/test, the answer is 127.0.0.1, the browser connects to Caddy on port 80, and Caddy proxies to the dev servers that Portside started">
+  <img src="assets/diagram.svg" width="800" alt="Diagram: the browser looks up blog.test, macOS asks Portside's DNS server through /etc/resolver/test, the answer is 127.0.0.1, the browser connects to Caddy on port 80, and Caddy proxies to the dev servers that Portside started">
 </p>
 
 **DNS.** macOS 26 resolves every `*.localhost` name to `127.0.0.1` and `::1` by itself, and Chrome and Firefox do the same. Portside does not assume this. At launch it looks up a random name under your suffix, and when the answer is loopback, Portside runs no DNS server. Otherwise, for example with `.test`, Portside runs a small DNS server on `127.0.0.1:35353` that answers every name under the suffix with `127.0.0.1` and `::1`. The file `/etc/resolver/<suffix>` tells macOS to ask that server for that suffix only. Every other lookup goes to your normal DNS. The diagram shows the `.test` path.
@@ -78,7 +78,7 @@ Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each comm
 ## Logs
 
 <p align="center">
-  <img src="assets/screenshots/logs.png" width="720" alt="The logs window for smartcity with a tab for each process and colored Vite output">
+  <img src="assets/screenshots/logs.png" width="720" alt="The logs window for blog with a tab for each process and colored Vite output">
 </p>
 
 Each site has a log window with one tab per process, main process first. The window keeps the last 10,000 lines of each process and renders ANSI colors. It scrolls with new output until you scroll up. From the toolbar you can start, stop, or restart one process, search, copy the output, and open the folder in Finder or Terminal. To keep logs on disk as well, turn on log mirroring in **Settings**. Portside then writes `~/Library/Logs/Portside/<site>/<process>.log`.
@@ -92,13 +92,13 @@ Another program is listening on port 80. Portside shows its name and pid. Common
 1. Open **Settings > Network**.
 2. Set the proxy port to `8080`.
 
-Your URLs then gain the port, for example `http://smartcity.localhost:8080`. Portside shows and opens the new URLs.
+Your URLs then gain the port, for example `http://blog.localhost:8080`. Portside shows and opens the new URLs.
 
 ### Can I use Portside next to Laravel Herd or Valet?
 
 Yes, with the default `.localhost` suffix. Herd and Valet own `.test` through `/etc/resolver/test`. `.localhost` needs no resolver file, so Portside never touches theirs.
 
-Port 80 still conflicts. Herd and Valet run nginx on port 80, and only one program can listen there. Set Portside's proxy port to `8080` in **Settings > Network**, and your sites open at `http://smartcity.localhost:8080`.
+Port 80 still conflicts. Herd and Valet run nginx on port 80, and only one program can listen there. Set Portside's proxy port to `8080` in **Settings > Network**, and your sites open at `http://blog.localhost:8080`.
 
 If you choose `.test` instead, Portside and Herd claim the same file, and macOS reads only one. Portside shows the other tool's file and asks before it replaces it. To give `.test` back to Herd or Valet, quit Portside and use Herd's own repair, or run `valet install` for Valet. You can also restore the file by hand:
 

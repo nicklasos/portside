@@ -25,7 +25,7 @@ final class DNSServerTests: XCTestCase {
     }
 
     func testAQueryUnderTestAnswersIPv4Loopback() {
-        let q = query("smartcity.test", .a)
+        let q = query("blog.test", .a)
         XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 1) + Array(q[12...]) + aRecord)
     }
 
@@ -36,22 +36,22 @@ final class DNSServerTests: XCTestCase {
     }
 
     func testAAAAQueryAnswersIPv6Loopback() {
-        let q = query("api.smartcity.test", .aaaa)
+        let q = query("api.blog.test", .aaaa)
         XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 1) + Array(q[12...]) + aaaaRecord)
     }
 
     func testAnyQueryAnswersBothFamilies() {
-        let q = query("smartcity.test", .any)
+        let q = query("blog.test", .any)
         XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 2) + Array(q[12...]) + aRecord + aaaaRecord)
     }
 
     func testOtherTypesUnderTestAreEmptyNoError() {
-        let q = query("smartcity.test", .mx)
+        let q = query("blog.test", .mx)
         XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 0) + Array(q[12...]))
     }
 
     func testUppercaseNameMatchesAndQuestionIsEchoedVerbatim() {
-        let q = query("SmartCity.TEST", .a)
+        let q = query("Blog.TEST", .a)
         XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 1) + Array(q[12...]) + aRecord)
     }
 
@@ -66,11 +66,11 @@ final class DNSServerTests: XCTestCase {
     }
 
     func testZoneIsAParameter() {
-        let localhost = query("smartcity.localhost", .a)
+        let localhost = query("blog.localhost", .a)
         XCTAssertEqual(DNSServer.response(to: localhost, zone: "localhost"), header(answers: 1) + Array(localhost[12...]) + aRecord)
         XCTAssertEqual(DNSServer.response(to: localhost, zone: "test")?[3], 0x83, "outside the test zone")
 
-        let test = query("smartcity.test", .a)
+        let test = query("blog.test", .a)
         XCTAssertEqual(DNSServer.response(to: test, zone: "loc")?[3], 0x83, "outside the loc zone")
 
         let selfTest = query("portside-selftest.loc", .a)
@@ -78,7 +78,7 @@ final class DNSServerTests: XCTestCase {
     }
 
     func testMalformedPacketsAreDropped() {
-        let q = query("smartcity.test", .a)
+        let q = query("blog.test", .a)
         XCTAssertNil(DNSServer.response(to: Array(q.prefix(11)), zone: "test"), "shorter than a header")
         XCTAssertNil(DNSServer.response(to: Array(q.prefix(20)), zone: "test"), "label runs past the end")
         XCTAssertNil(DNSServer.response(to: Array(q.dropLast(2)), zone: "test"), "missing QCLASS")
@@ -113,7 +113,7 @@ final class DNSServerTests: XCTestCase {
         addr.sin_port = UInt16(port).bigEndian
         addr.sin_addr.s_addr = inet_addr("127.0.0.1")
 
-        let q = query("smartcity.test", .a)
+        let q = query("blog.test", .a)
         let sent = withUnsafePointer(to: &addr) {
             $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
                 sendto(fd, q, q.count, 0, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
