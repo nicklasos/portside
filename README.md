@@ -4,7 +4,7 @@
 
 <h1 align="center">Portside</h1>
 
-<p align="center">Your local dev servers, on <code>*.test</code> domains, from the menu bar.</p>
+<p align="center">Your local dev servers, on <code>*.localhost</code> domains, from the menu bar.</p>
 
 <p align="center">
   <a href="https://github.com/nicklasos/portside/releases/latest"><img src="https://img.shields.io/github/v/release/nicklasos/portside" alt="Latest release"></a>
@@ -20,10 +20,11 @@
 
 ## What it does
 
-- Maps `smartcity.test` to `localhost:5474`, and any other `*.test` name to the port you choose.
+- Maps `smartcity.localhost` to `localhost:5474`, and any other site name to the port you choose.
 - Starts and stops every process of a project with one click.
 - Shows each process's output in a tabbed log window, colors included.
-- Puts additional processes on subdomains, such as `api.smartcity.test` for an API on port 8185.
+- Puts additional processes on subdomains, such as `api.smartcity.localhost` for an API on port 8185.
+- Uses `.localhost` by default, which macOS resolves with no setup. You can choose `.test`, `.loc`, `.local`, or your own suffix instead.
 
 ## Install
 
@@ -34,7 +35,13 @@
    - On macOS 15 or later, open **System Settings > Privacy & Security** and click **Open Anyway** next to the Portside message.
 
    You do this once. Updates install in place through Sparkle and do not ask again.
-4. When Portside asks, enter your administrator password. Portside writes one file, `/etc/resolver/test`, which tells macOS to send `.test` lookups to Portside. This is the only change outside your home folder.
+4. Choose your local domain. Portside lists `.localhost`, `.test`, `.loc`, `.local`, and a custom suffix, and shows what each one needs on your Mac. `.localhost` needs no setup and no password.
+
+   Any other suffix needs one file, `/etc/resolver/<suffix>`, which tells macOS to send that suffix's lookups to Portside. Portside explains the file and waits for you to click **Install resolver**. Then macOS asks for your administrator password once. The resolver file is the only change outside your home folder.
+
+<p align="center">
+  <img src="assets/screenshots/onboarding.png" width="480" alt="The Choose your local domain window: .localhost works without setup, .test belongs to another tool on this Mac, .loc and .local need a resolver file, and a custom field">
+</p>
 
 A Homebrew cask is planned.
 
@@ -45,10 +52,10 @@ A Homebrew cask is planned.
 </p>
 
 1. Click the Portside icon in the menu bar, then click **Add Site** (⌘N).
-2. Enter a name, such as `smartcity`, and choose the project folder. The site's domain is `smartcity.test`.
+2. Enter a name, such as `smartcity`, and choose the project folder. The site's domain is `smartcity.localhost`.
 3. Enter the command that starts your dev server, such as `npm run dev`, and the port it listens on, such as `5474`.
-4. To run an API or a worker too, click **Add** under **Additional processes**. Give it a subdomain, such as `api`, to reach it at `api.smartcity.test`.
-5. Click **Save**, click the start button on the site's row, and then click the open button. Your browser opens `http://smartcity.test`.
+4. To run an API or a worker too, click **Add** under **Additional processes**. Give it a subdomain, such as `api`, to reach it at `api.smartcity.localhost`.
+5. Click **Save**, click the start button on the site's row, and then click the open button. Your browser opens `http://smartcity.localhost`.
 
 Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each command. A command such as `npm run dev -- --port $PORT` stays in step with the port you entered. Leave the command empty to serve the folder as static files.
 
@@ -58,9 +65,11 @@ Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each comm
   <img src="assets/diagram.svg" width="800" alt="Diagram: the browser looks up smartcity.test, macOS asks Portside's DNS server through /etc/resolver/test, the answer is 127.0.0.1, the browser connects to Caddy on port 80, and Caddy proxies to the dev servers that Portside started">
 </p>
 
-**DNS.** Portside runs a small DNS server on `127.0.0.1:35353` that answers every `*.test` name with `127.0.0.1` and `::1`. The file `/etc/resolver/test` tells macOS to ask that server for `.test` names only. Every other lookup goes to your normal DNS.
+**DNS.** macOS 26 resolves every `*.localhost` name to `127.0.0.1` and `::1` by itself, and Chrome and Firefox do the same. Portside does not assume this. At launch it looks up a random name under your suffix, and when the answer is loopback, Portside runs no DNS server. Otherwise, for example with `.test`, Portside runs a small DNS server on `127.0.0.1:35353` that answers every name under the suffix with `127.0.0.1` and `::1`. The file `/etc/resolver/<suffix>` tells macOS to ask that server for that suffix only. Every other lookup goes to your normal DNS. The diagram shows the `.test` path.
 
 **Proxy.** Portside bundles [Caddy](https://caddyserver.com) and runs it on port 80. Caddy matches the `Host` header and forwards the request to the right local port. WebSockets pass through, so hot reload works. Caddy sets `Host` to the upstream address, such as `localhost:5474`, so dev servers that check the host accept the request. The original host goes in `X-Forwarded-Host`. Turn on **Preserve Host header** for a process that needs the real host. When a site is stopped, its domain shows a Portside page that tells you to start it.
+
+**Check.** **Settings > Network** shows whether your suffix works. **Test now** looks up `portside-selftest.<suffix>` and requests it through Caddy, which answers with a marker. When the check fails, it names the step: DNS, the proxy port, or Caddy.
 
 **Process groups.** Each command runs under `/bin/zsh -ilc` in its own process group. `make dev` and `npm run dev` fork child processes, and stopping only the parent would leave a child holding the port. Portside sends `SIGTERM` to the whole group, waits 5 seconds, then sends `SIGKILL`. If Portside crashes, it kills the leftover groups the next time it starts.
 
@@ -83,21 +92,34 @@ Another program is listening on port 80. Portside shows its name and pid. Common
 1. Open **Settings > Network**.
 2. Set the proxy port to `8080`.
 
-Your URLs then gain the port, for example `http://smartcity.test:8080`. Portside shows and opens the new URLs.
+Your URLs then gain the port, for example `http://smartcity.localhost:8080`. Portside shows and opens the new URLs.
 
 ### Can I use Portside next to Laravel Herd or Valet?
 
-Not both on `.test` at the same time. Herd, Valet, and Portside each claim `.test` through the same file, `/etc/resolver/test`, and macOS reads only one. When Portside finds a resolver file that another tool wrote, it asks before it replaces the file. Herd and Valet also listen on port 80, so set Portside's proxy port to `8080` while they run.
+Yes, with the default `.localhost` suffix. Herd and Valet own `.test` through `/etc/resolver/test`. `.localhost` needs no resolver file, so Portside never touches theirs.
 
-To switch back to Herd or Valet, quit Portside and use Herd's own repair, or run `valet install` for Valet. You can also restore the file by hand:
+Port 80 still conflicts. Herd and Valet run nginx on port 80, and only one program can listen there. Set Portside's proxy port to `8080` in **Settings > Network**, and your sites open at `http://smartcity.localhost:8080`.
+
+If you choose `.test` instead, Portside and Herd claim the same file, and macOS reads only one. Portside shows the other tool's file and asks before it replaces it. To give `.test` back to Herd or Valet, quit Portside and use Herd's own repair, or run `valet install` for Valet. You can also restore the file by hand:
 
 ```sh
 sudo sh -c 'printf "nameserver 127.0.0.1\n" > /etc/resolver/test'
 ```
 
+### Which suffix should I choose?
+
+Keep `.localhost` unless you have a reason not to. It needs no setup and is reserved for your own computer.
+
+- `.test` is reserved for testing and gives shorter names. It needs `/etc/resolver/test`, which Herd and Valet also use.
+- `.loc` is not reserved. A device or a DNS server on your network may already answer it.
+- `.local` belongs to Bonjour. macOS sends `.local` lookups out as multicast for AirDrop, printers, and `YourMac.local`, so they can be slow or collide. Portside offers it, but does not recommend it.
+- A custom suffix must be one label of lowercase letters, digits, and dashes. Portside refuses real public TLDs such as `.com` and `.io`, and HSTS-preloaded TLDs such as `.dev` and `.app`, which make browsers refuse plain HTTP.
+
+To change the suffix later, open **Settings > Network**. Running processes keep the old `PORTSIDE_URL` until you restart them. If Portside wrote a resolver file for the old suffix, Settings offers to remove it.
+
 ### Vite says "Blocked request" or "Invalid Host header"
 
-By default, Portside rewrites `Host` to the upstream address, such as `localhost:5474`, which dev servers accept. If you turned on **Preserve Host header** for the process, the dev server sees `smartcity.test` and may reject it. Vite 6 and later need the domain in `server.allowedHosts`:
+By default, Portside rewrites `Host` to the upstream address, such as `localhost:5474`, which dev servers accept. If you turned on **Preserve Host header** for the process, the dev server sees the real domain. Vite 6 and later accept `*.localhost` names by default. For `.test` or another suffix, add the suffix to `server.allowedHosts`:
 
 ```js
 // vite.config.js
@@ -121,7 +143,7 @@ Not yet. Portside serves plain HTTP. HTTPS through Caddy's local certificate aut
 ### How do I uninstall Portside?
 
 1. Quit Portside. Quitting stops every process it started.
-2. Remove the resolver file:
+2. If you chose a suffix other than `.localhost`, remove its resolver file, for example:
 
 	```sh
 	sudo rm /etc/resolver/test

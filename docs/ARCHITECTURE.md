@@ -1,8 +1,10 @@
 # Portside architecture
 
-Portside is one menu bar process that runs three things for you. A DNS server answers every `*.test` name with a loopback address. A bundled Caddy reverse proxy routes each `*.test` host to a local port. A process manager starts your dev commands in their own process groups and keeps their output. This document describes how those parts fit together, as the code implements them. [`PLAN.md`](PLAN.md) holds the original design and the roadmap.
+Portside is one menu bar process that runs three things for you. A bundled Caddy reverse proxy routes each site's host, such as `smartcity.localhost`, to a local port. A process manager starts your dev commands in their own process groups and keeps their output. A DNS server answers names under the chosen domain suffix with a loopback address, and it runs only when macOS does not already resolve that suffix. This document describes how those parts fit together, as the code implements them. [`PLAN.md`](PLAN.md) holds the original design and the roadmap.
 
-![Request flow from the browser through Portside's DNS server and Caddy to the dev servers](../assets/diagram.svg)
+![Request flow for .test from the browser through Portside's DNS server and Caddy to the dev servers](../assets/diagram.svg)
+
+The diagram shows the `.test` path. With the default `.localhost` suffix, macOS answers the lookup itself and the DNS server does not run.
 
 ## Components
 
@@ -12,38 +14,68 @@ Each service owns one concern. The UI layer in [`Portside/App`](../Portside/App)
 | --- | --- | --- |
 | `SiteStore` | [`Store/SiteStore.swift`](../Portside/Store/SiteStore.swift) | The list of sites. Validates a site before it saves it, and writes `sites.json` after every change. |
 | `Persistence` | [`Store/Persistence.swift`](../Portside/Store/Persistence.swift) | Reading and atomically writing `sites.json`. |
-| `AppSettings` | [`Store/AppSettings.swift`](../Portside/Store/AppSettings.swift) | Preferences in `UserDefaults`: proxy port (80), DNS port (35353), Caddy admin port (2019), crash notifications (on), and log mirroring to disk (off). |
+| `AppSettings` | [`Store/AppSettings.swift`](../Portside/Store/AppSettings.swift) | Preferences in `UserDefaults`: domain suffix (`localhost`), whether the user has chosen it, proxy port (80), DNS port (35353), Caddy admin port (2019), crash notifications (on), and log mirroring to disk (off). **Reset to Defaults** keeps the domain suffix. |
+| `DomainSuffix` | [`Models/DomainSuffix.swift`](../Portside/Models/DomainSuffix.swift) | The top-level label every site lives under. The presets are `.localhost`, `.test`, `.loc`, and `.local`. `DomainSuffix.custom(_:)` validates a typed suffix and is the only other way to make one. |
 | `SiteValidation` | [`Models/SiteValidation.swift`](../Portside/Models/SiteValidation.swift) | The rules a site must pass. Errors block a save. A shared `host:port` is only a warning. |
 | `ProcessManager` | [`Services/ProcessManager.swift`](../Portside/Services/ProcessManager.swift) | The state of every process, the spawned groups, one `LogBuffer` per process, and the `pids.json` ledger. |
 | `ManagedProcess` | [`Services/ManagedProcess.swift`](../Portside/Services/ManagedProcess.swift) | One spawned `/bin/zsh -ilc <command>` from spawn until its leader is reaped and its output is drained. |
 | `Spawn` | [`Services/Spawn.swift`](../Portside/Services/Spawn.swift) | The `posix_spawn` call and the signals that stop a process group. |
 | `LogBuffer` | [`Services/LogBuffer.swift`](../Portside/Services/LogBuffer.swift) | A line ring buffer of 10,000 lines per process, with an optional mirror file. |
-| `DNSServer` | [`Services/DNSServer.swift`](../Portside/Services/DNSServer.swift) | The UDP DNS responder for `.test`. |
-| `ResolverInstaller` | [`Services/ResolverInstaller.swift`](../Portside/Services/ResolverInstaller.swift) | `/etc/resolver/test`: its status, the privileged install, and the resolution self-test. |
+| `DNSServer` | [`Services/DNSServer.swift`](../Portside/Services/DNSServer.swift) | The UDP DNS responder for one zone, the current suffix. |
+| `ResolverInstaller` | [`Services/ResolverInstaller.swift`](../Portside/Services/ResolverInstaller.swift) | `/etc/resolver/<suffix>`: its status, and the privileged install and uninstall. |
+| `SuffixUsability`, `EndToEndCheck` | [`Services/SuffixCheck.swift`](../Portside/Services/SuffixCheck.swift) | What Portside can tell about a suffix on this Mac, and the check that a browser would reach the proxy. `SuffixProbes` holds the lookup and the HTTP request, so tests can script them. |
 | `PortChecker` | [`Services/PortChecker.swift`](../Portside/Services/PortChecker.swift) | Checking whether a port is free, and naming the process that holds it. |
 | `CaddyConfigBuilder` | [`Services/CaddyConfigBuilder.swift`](../Portside/Services/CaddyConfigBuilder.swift) | Turning sites into Caddy JSON. A pure function with golden-file tests. |
 | `ProxyManager` | [`Services/ProxyManager.swift`](../Portside/Services/ProxyManager.swift) | The Caddy child process, its config file, and live reloads through the admin API. |
 
-The models live in [`Portside/Models`](../Portside/Models). A `Site` has a `name`, a `folder`, one `main` process, zero or more `extras`, and an `autoStart` flag. A `ProcessConfig` has a `label`, a `command`, a `host`, a `port`, an optional `subdomain`, an optional `workingDirectory`, extra `env` variables, and `preserveHost`. The main process answers on `<name>.test`. An extra process answers on `<subdomain>.<name>.test`, or on no domain when it has no subdomain. A main process with an empty command makes the site static: Caddy serves the folder and Portside spawns nothing.
+The models live in [`Portside/Models`](../Portside/Models). A `Site` has a `name`, a `folder`, one `main` process, zero or more `extras`, and an `autoStart` flag. A `ProcessConfig` has a `label`, a `command`, a `host`, a `port`, an optional `subdomain`, an optional `workingDirectory`, extra `env` variables, and `preserveHost`. Domains are not stored. `Site.domain(in:)` and `Site.domain(for:in:)` derive them from the site name, the process subdomain, and the current `DomainSuffix`. The main process answers on `<name>.<suffix>`. An extra process answers on `<subdomain>.<name>.<suffix>`, or on no domain when it has no subdomain. `PortsideController.domain(for:process:)` and `url(for:process:)` apply the current suffix for the UI. A main process with an empty command makes the site static: Caddy serves the folder and Portside spawns nothing.
+
+## Domain suffix
+
+The first launch opens a window that asks for the suffix. **Settings > Network** shows the same list. Each option shows three checked lines from `SuffixUsability.evaluate`:
+
+| Line | Source |
+| --- | --- |
+| What the name means | `DomainSuffix.nameCheck`. `.localhost` and `.test` are reserved by RFC 6761. `.loc` and similar names are not reserved and may collide with names on the network. `.local` belongs to Bonjour, so lookups go out as multicast and can be slow or collide. |
+| How this Mac resolves it | A `getaddrinfo` lookup of `portside-probe-<uuid>.<suffix>`. |
+| Who owns `/etc/resolver/<suffix>` | The file's content: missing, Portside's own, or another tool's. Another tool's content is shown. |
+
+`DomainSuffix.custom(_:)` rejects a malformed label, an all-digit label, the preset labels, the HSTS-preloaded TLDs such as `dev` and `app`, and common public TLDs such as `com` and `io`. Each rejection carries the reason the UI shows.
+
+The same evaluation picks the `ResolutionStrategy`:
+
+- `system`: no resolver file exists for the suffix, and every address the probe returns is loopback. macOS 26 resolves `*.localhost` this way. Portside runs no DNS server and asks for no password.
+- `portsideDNS`: any other result. Portside starts `DNSServer` for the suffix and needs `/etc/resolver/<suffix>`.
+
+A resolver file decides the strategy on its own. Herd's `/etc/resolver/test` makes `.test` resolve to `127.0.0.1` through Herd's dnsmasq, and that answer disappears when Herd stops, so it does not count as `system`.
+
+`PortsideController.chooseDomainSuffix(_:)` stores the suffix, pushes the new hosts to Caddy, probes again, and then starts or stops the DNS server. It does not restart running processes. When something is running, it sets a notice that says to restart the sites to update `PORTSIDE_URL`. `staleResolvers` lists Portside's own resolver files for other suffixes, and Settings offers to remove each one through `ResolverInstaller.uninstall`.
+
+### End-to-end check
+
+`EndToEndCheck.run` runs at launch, after a resolver install, and from **Test now** in Settings. It reports the first step that fails:
+
+1. DNS. `portside-selftest.<suffix>` must resolve to `127.0.0.53` under `portsideDNS`, which proves the answer came from Portside's server. Under `system`, it must resolve to loopback only.
+2. The proxy state. A port conflict names the owner. A stopped or failed Caddy says so.
+3. HTTP. `LoopbackHTTP.get` sends `GET /` with `Host: portside-selftest.<suffix>` to `127.0.0.1:<proxy port>`. Caddy's first route answers that host with `portside-ok`. The request goes to `127.0.0.1` because macOS routes only `127.0.0.1` on `lo0`, and a connection to `127.0.0.53` times out.
 
 ## Request flow
 
-1. The browser asks macOS for `smartcity.test`.
-2. macOS reads `/etc/resolver/test`, which says `nameserver 127.0.0.1` and `port 35353`. It sends the query to Portside's `DNSServer`.
-3. `DNSServer` answers `127.0.0.1` for A queries and `::1` for AAAA queries.
-4. The browser connects to port 80 on loopback and sends `Host: smartcity.test`.
-5. Caddy matches the exact host and proxies the request to the process's upstream, for example `localhost:5474`. WebSocket upgrades pass through, so Vite HMR works.
-6. `api.smartcity.test` matches its own route and goes to `localhost:8185`.
+1. The browser asks macOS for `smartcity.localhost`.
+2. With the `system` strategy, macOS answers `127.0.0.1` and `::1` itself. With `portsideDNS`, for example for `smartcity.test`, macOS reads `/etc/resolver/test`, which says `nameserver 127.0.0.1` and `port 35353`, and sends the query to Portside's `DNSServer`. `DNSServer` answers `127.0.0.1` for A queries and `::1` for AAAA queries.
+3. The browser connects to port 80 on loopback and sends `Host: smartcity.localhost`.
+4. Caddy matches the exact host and proxies the request to the process's upstream, for example `localhost:5474`. WebSocket upgrades pass through, so Vite HMR works.
+5. `api.smartcity.localhost` matches its own route and goes to `localhost:8185`.
 
-If you change the proxy port in Settings, URLs gain the port, for example `http://smartcity.test:8080`. `AppSettings.url(forDomain:)` builds every URL the app shows or opens.
+If you change the proxy port in Settings, URLs gain the port, for example `http://smartcity.localhost:8080`. `AppSettings.url(forDomain:)` builds every URL the app shows or opens.
 
 ## DNS
 
-`DNSServer` is a SwiftNIO `DatagramBootstrap` bound to `127.0.0.1` on the DNS port. It speaks UDP only. `DNSServer.response(to:)` is a pure function from query bytes to reply bytes, so the tests exercise it without a socket.
+`DNSServer(port:zone:)` is a SwiftNIO `DatagramBootstrap` bound to `127.0.0.1` on the DNS port. It runs only under the `portsideDNS` strategy, and its zone is the current suffix. It speaks UDP only. `DNSServer.response(to:zone:)` is a pure function from query bytes to reply bytes, so the tests exercise it without a socket. The table uses `.test` as the zone.
 
 | Query | Reply |
 | --- | --- |
-| A for a name whose last label is `test` | `127.0.0.1`, TTL 60, authoritative. |
+| A for a name whose last label is the zone | `127.0.0.1`, TTL 60, authoritative. |
 | AAAA under `.test` | `::1`. Browsers stall on IPv6 lookups that time out, so Portside answers AAAA too. |
 | ANY under `.test` | Both records. |
 | Any other type under `.test` | NOERROR with no answers. |
@@ -53,9 +85,9 @@ If you change the proxy port in Settings, URLs gain the port, for example `http:
 
 Names match case-insensitively, and the reply echoes the question bytes as sent.
 
-The `127.0.0.53` answer exists for the self-test. Laravel Herd, Valet, and dnsmasq setups also answer `.test` names with `127.0.0.1`. A plain lookup cannot tell whether macOS asked Portside or one of them. `ResolverInstaller.selfTest()` calls `getaddrinfo("portside-selftest.test")` and passes only when the answer is `127.0.0.53`, which no other resolver returns.
+The `127.0.0.53` answer exists for the end-to-end check. Laravel Herd, Valet, and dnsmasq setups also answer `.test` names with `127.0.0.1`. A plain lookup cannot tell whether macOS asked Portside or one of them. The check passes the DNS step only when `portside-selftest.<suffix>` resolves to `127.0.0.53`, which no other resolver returns.
 
-`ResolverInstaller.status(dnsPort:)` reads `/etc/resolver/test` and compares its directives, ignoring whitespace and comments, with `nameserver 127.0.0.1` and `port <dnsPort>`. It reports `installed`, `missing`, or `mismatched`. A Herd or Valet resolver file reads as `mismatched`. `ResolverInstaller.install(dnsPort:)` runs one AppleScript `do shell script ... with administrator privileges` that writes the file and flushes the caches with `dscacheutil -flushcache` and `killall -HUP mDNSResponder`. A cancelled password prompt throws `ResolverInstallError.cancelled`.
+`ResolverInstaller.status(contents:dnsPort:)` compares the directives of `/etc/resolver/<suffix>`, ignoring whitespace and comments, with `nameserver 127.0.0.1` and `port <dnsPort>`. It reports `installed`, `missing`, or `mismatched`. A Herd or Valet resolver file reads as `mismatched`. `ResolverInstaller.install(suffix:dnsPort:)` runs one AppleScript `do shell script ... with administrator privileges` that writes the file and flushes the caches with `dscacheutil -flushcache` and `killall -HUP mDNSResponder`. `ResolverInstaller.uninstall(suffix:dnsPort:)` uses the same path. Its shell command compares the file with Portside's exact content and removes it only on a match, so another tool's file stays even if it changed after Settings offered the removal. A cancelled password prompt throws `ResolverInstallError.cancelled`. Both calls happen only from a button click.
 
 ## Proxy
 
@@ -76,6 +108,7 @@ The admin API requests use an ephemeral `URLSession` with no system proxy and no
 [`CaddyConfigBuilder.build`](../Portside/Services/CaddyConfigBuilder.swift) first computes one `HostRoute` per domain, sorted by host, then renders JSON. The golden files in [`PortsideTests/Fixtures`](../PortsideTests/Fixtures) show the full output. The shape is:
 
 - `admin.listen` is `127.0.0.1:<admin port>`, and `admin.config.persist` is `false`, so Caddy saves no copy of its config.
+- The first route matches `portside-selftest.<suffix>` and returns `200 portside-ok` for the end-to-end check. `SiteValidation` rejects a site named `portside-selftest`.
 - One server, `portside`, listens on `:<proxy port>`. macOS lets a process without root bind a port below 1024 only on the wildcard address, so the listener cannot be `127.0.0.1:80`. `automatic_https` is disabled.
 - Each domain gets one route that matches the exact host and is `terminal`. Routes exist for every configured site, whether it runs or not.
 - A route to a process with a command is a `reverse_proxy` to `host:port` with `flush_interval: -1`, so server-sent events and streams are not buffered. By default the route sets `Host` to the upstream's `host:port` and sets `X-Forwarded-Host` to the browser's host, because Vite and similar dev servers reject unknown hosts. A process with `preserveHost` passes the browser's `Host` through unchanged.
@@ -113,7 +146,7 @@ A static site has no process. `ProcessManager` keeps the ids of enabled static s
 | `HOST` | The process's host. |
 | `PORTSIDE` | `1` |
 | `PORTSIDE_SITE` | The site name. |
-| `PORTSIDE_URL` | The process's URL, with the port when the proxy is not on 80. Unset for a process with no domain. |
+| `PORTSIDE_URL` | The process's URL under the suffix in use at start, with the port when the proxy is not on 80. Unset for a process with no domain. |
 | The process's `env` | Applied on top of the variables above. |
 | `TERM`, `FORCE_COLOR` | `xterm-256color` and `1`, so tools keep their colors in the log. |
 
@@ -158,7 +191,7 @@ Portside expects to be force-quit or to crash, and cleans up on the next launch.
 | `~/Library/Application Support/Portside/caddy/` | `caddy.pid`, plus Caddy's `config/` and `data/` directories. |
 | `~/Library/Logs/Portside/<site>/<label>.log` | Process output, when log mirroring is on. |
 | `~/Library/Logs/Portside/<site>/access.log` | The access log of a static site. |
-| `/etc/resolver/test` | The resolver file. The only file outside your home folder. |
+| `/etc/resolver/<suffix>` | The resolver file, written only for a suffix that needs it. The only file outside your home folder. |
 | `Portside.app/Contents/MacOS/caddy` | The bundled universal Caddy binary. |
 | `Portside.app/Contents/Resources/Licenses/caddy-LICENSE.txt` | Caddy's Apache-2.0 license. |
 
@@ -172,10 +205,10 @@ Preferences live in the app's `UserDefaults` domain, `com.nicklasos.portside`.
 | Pipe reads and leader reaping for one process | A serial `DispatchQueue` named `portside.process.<pid>`. |
 | `Spawn.terminateGroup`, which blocks while it polls | A global dispatch queue, never the main thread. |
 | `LogBuffer` appends | Any thread, under an `OSAllocatedUnfairLock`. The buffer bumps `revision` on the main thread at most about 30 times a second. |
-| `DNSServer` | One SwiftNIO event loop thread. |
+| `DNSServer` | One SwiftNIO event loop thread, while the `portsideDNS` strategy is in use. |
 | Caddy output | A detached task that reads Caddy's stdout and stderr line by line and hands each line to the main actor. |
-| `ResolverInstaller.install` | The main thread, because it runs `NSAppleScript`. |
-| `ResolverInstaller.selfTest` | A detached task, because `getaddrinfo` blocks. |
+| `ResolverInstaller.install` and `uninstall` | The main thread, because they run `NSAppleScript`. |
+| `SuffixProbes.live` lookups and requests | Detached tasks, because `getaddrinfo` and the socket calls block. |
 
 ## Build and signing
 
