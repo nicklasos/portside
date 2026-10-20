@@ -12,6 +12,7 @@
 		47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3345620368D6CD91E90311C1 /* AppSettings.swift */; };
 		5EB210EE6B5B8D8D42BA314C /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = A3BCBDF791C4278E30A0B91E /* NIOCore */; };
 		689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B75ED958BAF6F739693E706A /* SiteStoreTests.swift */; };
+		71F5BA90FCC26C045875CCFE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE7F056C6696C3BCD6DE74EC /* Assets.xcassets */; };
 		798DCC7E03E3800EF57F70E6 /* SiteStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9270A7646452D32DB6A624FC /* SiteStatus.swift */; };
 		89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A928D3FA53478440B6618289 /* Persistence.swift */; };
 		8EE0BF56870C58E33D7A6A75 /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = F9633B64B2ACF581E6B5A5A5 /* NIOPosix */; };
@@ -47,6 +48,7 @@
 		A3371F8479F06873CE6C9225 /* SiteValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteValidation.swift; sourceTree = "<group>"; };
 		A928D3FA53478440B6618289 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		B75ED958BAF6F739693E706A /* SiteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStoreTests.swift; sourceTree = "<group>"; };
+		CE7F056C6696C3BCD6DE74EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DB013570A77DEFBE17D837C2 /* Site.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
 		EB83C883AAF22B2978122F84 /* PortsideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -136,10 +138,19 @@
 				190DAA0353D86872275C2476 /* Portside.entitlements */,
 				1F72B348FD8BE6DBF3198D82 /* App */,
 				9910EB765AA901D42AD8A8F3 /* Models */,
+				DF7701E57F9403C0B765D212 /* Resources */,
 				05A92E420E3917F7CBE0341A /* Store */,
 				7EBF685DE98E4D6955AD0B9D /* Views */,
 			);
 			path = Portside;
+			sourceTree = "<group>";
+		};
+		DF7701E57F9403C0B765D212 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				CE7F056C6696C3BCD6DE74EC /* Assets.xcassets */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		F3220EB177626A9B48443F47 /* PortsideTests */ = {
@@ -176,6 +187,7 @@
 			buildConfigurationList = 8F2003AB031E14069B5977BD /* Build configuration list for PBXNativeTarget "Portside" */;
 			buildPhases = (
 				9599B929AAB731001A4F201C /* Sources */,
+				BEA0B378DADF9C5C1E793ED9 /* Resources */,
 				0841EC5D4CC56737699DA826 /* Frameworks */,
 				8A8CF4E4A60AE0E700A94F63 /* Embed Caddy */,
 			);
@@ -235,6 +247,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BEA0B378DADF9C5C1E793ED9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				71F5BA90FCC26C045875CCFE /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		8A8CF4E4A60AE0E700A94F63 /* Embed Caddy */ = {
