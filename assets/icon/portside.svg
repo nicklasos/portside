@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B1E3A"/>
+      <stop offset="1" stop-color="#0F3D5E"/>
+    </linearGradient>
+    <linearGradient id="post" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F4F1EA"/>
+      <stop offset="0.7" stop-color="#F4F1EA"/>
+      <stop offset="1" stop-color="#D9D3C5"/>
+    </linearGradient>
+    <clipPath id="squircle">
+      <rect x="100" y="100" width="824" height="824" rx="185"/>
+    </clipPath>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="125%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dy="10"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.3"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#drop)">
+    <g clip-path="url(#squircle)">
+      <rect x="100" y="100" width="824" height="824" fill="url(#sea)"/>
+      <path d="M100 676 C 200 656 300 696 400 676 S 600 656 700 676 S 860 696 924 680 V 924 H 100 Z" fill="#1C5A80"/>
+      <path d="M100 760 C 230 744 330 776 460 760 S 700 744 924 762" fill="none" stroke="#2A7099" stroke-width="10" stroke-linecap="round" opacity="0.6"/>
+      <ellipse cx="512" cy="694" rx="190" ry="26" fill="#000" opacity="0.4" filter="url(#blur)"/>
+      <path d="M384 290 H 640 V 624 C 640 652 670 664 692 670 Q 706 674 706 688 V 690 H 318 V 688 Q 318 674 332 670 C 354 664 384 652 384 624 Z" fill="url(#post)"/>
+      <rect x="340" y="212" width="344" height="100" rx="46" fill="url(#post)"/>
+      <rect x="384" y="324" width="256" height="12" fill="#0B1E3A" opacity="0.22"/>
+      <path d="M640 386 C 730 410 780 520 810 620 S 880 860 960 1000" fill="none" stroke="#B9731F" stroke-width="44" stroke-linecap="round"/>
+      <path d="M640 386 C 730 410 780 520 810 620 S 880 860 960 1000" fill="none" stroke="#F2A33C" stroke-width="36" stroke-linecap="round"/>
+      <path d="M370 374 C 440 420 584 420 654 374" fill="none" stroke="#B9731F" stroke-width="44" stroke-linecap="round"/>
+      <path d="M370 374 C 440 420 584 420 654 374" fill="none" stroke="#F2A33C" stroke-width="36" stroke-linecap="round"/>
+      <circle cx="512" cy="212" r="40" fill="#34C759" stroke="#F4F1EA" stroke-width="8"/>
+    </g>
+  </g>
+</svg>
