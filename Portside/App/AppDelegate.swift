@@ -30,7 +30,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         for sig in [SIGTERM, SIGINT] {
             signal(sig, SIG_IGN)
             let source = DispatchSource.makeSignalSource(signal: sig, queue: .main)
-            source.setEventHandler { NSApp.terminate(nil) }
+            // Not a direct call: terminate's .terminateLater wait would block this main-queue block,
+            // and with it the @MainActor shutdown task queued behind it.
+            source.setEventHandler { NSApp.perform(#selector(NSApplication.terminate(_:)), with: nil, afterDelay: 0) }
             source.resume()
             signalSources.append(source)
         }
