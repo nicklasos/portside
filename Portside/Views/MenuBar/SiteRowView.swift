@@ -54,7 +54,7 @@ struct SiteRowView: View {
             .toggleStyle(.switch)
             .controlSize(.mini)
             .labelsHidden()
-            .help(controller.isAnyProcessAlive(site) ? "Stop serving \(site.folder)" : "Serve \(site.folder)")
+            .help("Static site, served from the folder")
             .padding(.trailing, 4)
         } else if controller.isAnyProcessAlive(site) {
             IconButton("stop.fill", help: "Stop") { Task { await controller.stop(site) } }
