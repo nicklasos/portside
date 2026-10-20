@@ -90,6 +90,21 @@ private struct NetworkSettings: View {
                     }
                 }
             }
+            Section("Resolution") {
+                LabeledContent(ResolverInstaller.resolverFile(for: suffix).path) {
+                    Text(resolverLine).foregroundStyle(controller.needsResolverSetup ? Color.orange : Color.secondary)
+                }
+                EndToEndRow()
+                if controller.resolution == .portsideDNS {
+                    HStack {
+                        Spacer()
+                        Button(controller.resolverStatus == .installed ? "Details…" : "Repair…") {
+                            controller.refreshResolverStatus()
+                            controller.show(.resolverSetup)
+                        }
+                    }
+                }
+            }
             Section {
                 LabeledContent("Proxy port") {
                     HStack {
@@ -112,21 +127,6 @@ private struct NetworkSettings: View {
                 Text("Port 80 gives plain `http://site\(suffix.display)` URLs. Any other port appears in every URL, such as `site\(suffix.display):8080`.")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
-            }
-            Section("Resolution") {
-                LabeledContent(ResolverInstaller.resolverFile(for: suffix).path) {
-                    Text(resolverLine).foregroundStyle(controller.needsResolverSetup ? Color.orange : Color.secondary)
-                }
-                EndToEndRow()
-                if controller.resolution == .portsideDNS {
-                    HStack {
-                        Spacer()
-                        Button(controller.resolverStatus == .installed ? "Details…" : "Repair…") {
-                            controller.refreshResolverStatus()
-                            controller.show(.resolverSetup)
-                        }
-                    }
-                }
             }
         }
         .formStyle(.grouped)

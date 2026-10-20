@@ -31,6 +31,7 @@ struct DomainSuffixPicker: View {
     @Binding var draft: DomainSuffixDraft
     @Environment(PortsideController.self) private var controller
     @State private var checks: [DomainSuffix: SuffixUsability] = [:]
+    @FocusState private var customFocused: Bool
 
     private static let badges: [DomainSuffix: String] = [.localhost: "Recommended", .local: "Not recommended"]
 
@@ -44,8 +45,11 @@ struct DomainSuffixPicker: View {
             option(.custom, title: "Custom…") {
                 TextField("", text: $draft.customText, prompt: Text("wip"))
                     .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.leading)
+                    .labelsHidden()
                     .frame(width: 140)
-                    .onChange(of: draft.customText) { draft.choice = .custom }
+                    .disabled(draft.choice != .custom)
+                    .focused($customFocused)
                 switch DomainSuffix.custom(draft.customText) {
                 case .success(let suffix): lines(for: suffix)
                 case .failure(let rejection) where !draft.customText.isEmpty: CheckLineView(line: CheckLine(.failure, rejection.reason))
@@ -58,6 +62,7 @@ struct DomainSuffixPicker: View {
                 .textSelection(.enabled)
                 .padding(.leading, 24)
         }
+        .onChange(of: draft.choice) { customFocused = draft.choice == .custom }
         .task(id: refreshKey) { await checkPresets() }
         .task(id: draft.customText) { await checkCustom() }
     }

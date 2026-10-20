@@ -362,6 +362,7 @@ final class PortsideController {
             suffix: settings.domainSuffix, strategy: resolution, proxyPort: settings.proxyPort,
             proxyState: proxy.state, probes: configuration.probes
         )
+        if configuration.isLive, let endToEnd { NSLog("Portside: end-to-end check for %@: %@", settings.domainSuffix.display, endToEnd.text) }
     }
 
     func resolverStatus(for suffix: DomainSuffix) -> ResolverStatus {

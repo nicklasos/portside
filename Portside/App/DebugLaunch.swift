@@ -6,6 +6,7 @@ import SwiftUI
 /// surface at launch, so screenshots can be taken without clicking through the menu bar.
 /// `-PortsideSnapshot <file.png>` then renders that window to a PNG from inside the app, which
 /// needs no screen-recording permission, and writes the menu bar glyph variants next to it.
+/// `-PortsideSnapshotDelay <seconds>` waits longer than the default 5, for checks that take time.
 @MainActor
 enum DebugLaunch {
     private static var done = false
@@ -28,7 +29,8 @@ enum DebugLaunch {
             }
         }
         if let path = UserDefaults.standard.string(forKey: "PortsideSnapshot") {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            let delay = UserDefaults.standard.double(forKey: "PortsideSnapshotDelay")
+            DispatchQueue.main.asyncAfter(deadline: .now() + (delay > 0 ? delay : 5)) {
                 snapshotFrontWindow(to: URL(fileURLWithPath: path))
                 snapshotGlyphs(to: URL(fileURLWithPath: path).deletingLastPathComponent().appendingPathComponent("menubar-glyphs.png"))
             }

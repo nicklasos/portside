@@ -54,7 +54,7 @@ final class SuffixCheckTests: XCTestCase {
     func testLocalIsOfferedWithItsBonjourWarning() async {
         let usability = await evaluate(.local, file: nil, resolves: [])
         XCTAssertEqual(usability.lines[0].mark, .warning)
-        XCTAssertTrue(usability.lines[0].text.hasPrefix("Not recommended. macOS uses .local for Bonjour"))
+        XCTAssertTrue(usability.lines[0].text.hasPrefix("macOS uses .local for Bonjour"))
     }
 
     // MARK: - End to end

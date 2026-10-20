@@ -26,7 +26,7 @@ struct DomainSuffix: Hashable, Codable {
         case "test":
             CheckLine(.ok, "Reserved for testing (RFC 6761), never a public TLD")
         case "local":
-            CheckLine(.warning, "Not recommended. macOS uses .local for Bonjour (AirDrop, printers, YourMac.local), so lookups go over multicast and can be slow or collide")
+            CheckLine(.warning, "macOS uses .local for Bonjour (AirDrop, printers, YourMac.local), so lookups go over multicast and can be slow or collide")
         case _ where Self.unreservedLocalNames.contains(label):
             CheckLine(.warning, "Not reserved. It may collide with names on your network")
         default:

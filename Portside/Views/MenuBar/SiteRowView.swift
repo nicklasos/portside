@@ -15,11 +15,14 @@ struct SiteRowView: View {
                 Text(site.name)
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
-                Text(domainsLine)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                ViewThatFits(in: .horizontal) {
+                    Text(domainsLine)
+                    Text(compactDomainsLine).truncationMode(.tail)
+                }
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .help(domainsLine)
             }
             Spacer(minLength: 4)
             HStack(spacing: 2) {
@@ -87,6 +90,11 @@ struct SiteRowView: View {
 
     private var domainsLine: String {
         site.processes.compactMap { controller.domain(for: site, process: $0) }.joined(separator: " · ")
+    }
+
+    /// `crm.localhost + admin` when the full domains do not fit the row.
+    private var compactDomainsLine: String {
+        ([controller.domain(for: site) ?? site.name] + site.extras.compactMap { $0.subdomain?.nilIfEmpty }).joined(separator: " + ")
     }
 
     private var tooltip: String {
