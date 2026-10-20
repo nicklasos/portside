@@ -35,7 +35,7 @@ enum SiteValidation {
         } else if !isValidLabel(site.name) {
             out.append(.init(field: .name, message: "Use lowercase letters, digits and dashes"))
         } else if all.contains(where: { $0.id != site.id && $0.name == site.name }) {
-            out.append(.init(field: .name, message: "\(site.domain) is already used"))
+            out.append(.init(field: .name, message: "Another site is already named \(site.name)"))
         }
 
         if site.folder.isEmpty {

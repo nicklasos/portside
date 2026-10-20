@@ -134,7 +134,7 @@ final class ProxyManager {
 
     private func buildConfig(sites: [Site], enabledStaticSites: Set<Site.ID>) -> Data {
         CaddyConfigBuilder.build(
-            sites: sites, enabledStaticSites: enabledStaticSites,
+            sites: sites, suffix: settings.domainSuffix, enabledStaticSites: enabledStaticSites,
             proxyPort: ports?.proxy ?? settings.proxyPort, adminPort: ports?.admin ?? settings.caddyAdminPort,
             logsDirectory: logsDirectory
         )

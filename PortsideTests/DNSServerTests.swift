@@ -26,65 +26,77 @@ final class DNSServerTests: XCTestCase {
 
     func testAQueryUnderTestAnswersIPv4Loopback() {
         let q = query("smartcity.test", .a)
-        XCTAssertEqual(DNSServer.response(to: q), header(answers: 1) + Array(q[12...]) + aRecord)
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 1) + Array(q[12...]) + aRecord)
     }
 
     func testSelfTestNameGetsPortsideOnlyAddress() {
         let q = query("Portside-Selftest.test", .a)
         let selfTestRecord = Array(aRecord.dropLast(4)) + [127, 0, 0, 53]
-        XCTAssertEqual(DNSServer.response(to: q), header(answers: 1) + Array(q[12...]) + selfTestRecord)
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 1) + Array(q[12...]) + selfTestRecord)
     }
 
     func testAAAAQueryAnswersIPv6Loopback() {
         let q = query("api.smartcity.test", .aaaa)
-        XCTAssertEqual(DNSServer.response(to: q), header(answers: 1) + Array(q[12...]) + aaaaRecord)
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 1) + Array(q[12...]) + aaaaRecord)
     }
 
     func testAnyQueryAnswersBothFamilies() {
         let q = query("smartcity.test", .any)
-        XCTAssertEqual(DNSServer.response(to: q), header(answers: 2) + Array(q[12...]) + aRecord + aaaaRecord)
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 2) + Array(q[12...]) + aRecord + aaaaRecord)
     }
 
     func testOtherTypesUnderTestAreEmptyNoError() {
         let q = query("smartcity.test", .mx)
-        XCTAssertEqual(DNSServer.response(to: q), header(answers: 0) + Array(q[12...]))
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 0) + Array(q[12...]))
     }
 
     func testUppercaseNameMatchesAndQuestionIsEchoedVerbatim() {
         let q = query("SmartCity.TEST", .a)
-        XCTAssertEqual(DNSServer.response(to: q), header(answers: 1) + Array(q[12...]) + aRecord)
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test"), header(answers: 1) + Array(q[12...]) + aRecord)
     }
 
     func testNameOutsideTestIsNXDomainWithoutAuthority() {
         let q = query("example.com", .a, id: 0x0102, recursionDesired: false)
-        XCTAssertEqual(DNSServer.response(to: q), [0x01, 0x02, 0x80, 0x83, 0, 1, 0, 0, 0, 0, 0, 0] + Array(q[12...]))
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test"), [0x01, 0x02, 0x80, 0x83, 0, 1, 0, 0, 0, 0, 0, 0] + Array(q[12...]))
     }
 
     func testNameThatOnlyContainsTestIsNotInZone() {
         let q = query("test.example", .a)
-        XCTAssertEqual(DNSServer.response(to: q)?[3], 0x83)
+        XCTAssertEqual(DNSServer.response(to: q, zone: "test")?[3], 0x83)
+    }
+
+    func testZoneIsAParameter() {
+        let localhost = query("smartcity.localhost", .a)
+        XCTAssertEqual(DNSServer.response(to: localhost, zone: "localhost"), header(answers: 1) + Array(localhost[12...]) + aRecord)
+        XCTAssertEqual(DNSServer.response(to: localhost, zone: "test")?[3], 0x83, "outside the test zone")
+
+        let test = query("smartcity.test", .a)
+        XCTAssertEqual(DNSServer.response(to: test, zone: "loc")?[3], 0x83, "outside the loc zone")
+
+        let selfTest = query("portside-selftest.loc", .a)
+        XCTAssertEqual(DNSServer.response(to: selfTest, zone: "loc").map { Array($0.suffix(4)) }, [127, 0, 0, 53])
     }
 
     func testMalformedPacketsAreDropped() {
         let q = query("smartcity.test", .a)
-        XCTAssertNil(DNSServer.response(to: Array(q.prefix(11))), "shorter than a header")
-        XCTAssertNil(DNSServer.response(to: Array(q.prefix(20))), "label runs past the end")
-        XCTAssertNil(DNSServer.response(to: Array(q.dropLast(2))), "missing QCLASS")
+        XCTAssertNil(DNSServer.response(to: Array(q.prefix(11)), zone: "test"), "shorter than a header")
+        XCTAssertNil(DNSServer.response(to: Array(q.prefix(20)), zone: "test"), "label runs past the end")
+        XCTAssertNil(DNSServer.response(to: Array(q.dropLast(2)), zone: "test"), "missing QCLASS")
 
         var response = q
         response[2] |= 0x80
-        XCTAssertNil(DNSServer.response(to: response), "QR set")
+        XCTAssertNil(DNSServer.response(to: response, zone: "test"), "QR set")
 
         var twoQuestions = q
         twoQuestions[5] = 2
-        XCTAssertNil(DNSServer.response(to: twoQuestions), "QDCOUNT 2")
+        XCTAssertNil(DNSServer.response(to: twoQuestions, zone: "test"), "QDCOUNT 2")
 
         let pointer = Array(q.prefix(12)) + [0xC0, 0x0C, 0, 1, 0, 1]
-        XCTAssertNil(DNSServer.response(to: pointer), "compression pointer in question")
+        XCTAssertNil(DNSServer.response(to: pointer, zone: "test"), "compression pointer in question")
     }
 
     func testServesQueriesOverUDP() throws {
-        let server = DNSServer(port: 0)
+        let server = DNSServer(port: 0, zone: "test")
         try server.start()
         defer { server.stop() }
         let port = try XCTUnwrap(server.boundPort)
@@ -125,14 +137,48 @@ final class DNSServerTests: XCTestCase {
     }
 
     func testResolverInstallScriptWritesExpectedFile() {
+        let command = ResolverInstaller.installCommand(suffix: .test, dnsPort: 35353)
         XCTAssertEqual(
-            ResolverInstaller.shellCommand(dnsPort: 35353),
+            command,
             #"mkdir -p /etc/resolver && printf 'nameserver 127.0.0.1\nport 35353\n' > /etc/resolver/test && (dscacheutil -flushcache; killall -HUP mDNSResponder; true)"#
         )
         XCTAssertEqual(
-            ResolverInstaller.appleScriptSource(dnsPort: 35353),
+            ResolverInstaller.appleScriptSource(shellCommand: command),
             #"do shell script "mkdir -p /etc/resolver && printf 'nameserver 127.0.0.1\\nport 35353\\n' > /etc/resolver/test && (dscacheutil -flushcache; killall -HUP mDNSResponder; true)" with administrator privileges"#
         )
+        XCTAssertTrue(ResolverInstaller.installCommand(suffix: .localhost, dnsPort: 35353).contains("> /etc/resolver/localhost &&"))
+    }
+
+    /// Runs the uninstall command against a temporary directory: it removes only Portside's exact file.
+    func testResolverUninstallRemovesOnlyPortsidesFile() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let file = dir.appendingPathComponent("test")
+        let command = ResolverInstaller.uninstallCommand(suffix: .test, dnsPort: 35353)
+            .replacingOccurrences(of: "/etc/resolver/test", with: file.path)
+            .replacingOccurrences(of: "(dscacheutil -flushcache; killall -HUP mDNSResponder; true)", with: "true")
+        func run() -> Int32 {
+            let shell = Process()
+            shell.executableURL = URL(fileURLWithPath: "/bin/sh")
+            shell.arguments = ["-c", command]
+            shell.standardError = FileHandle.nullDevice
+            try! shell.run()
+            shell.waitUntilExit()
+            return shell.terminationStatus
+        }
+
+        try "nameserver 127.0.0.1\n".write(to: file, atomically: true, encoding: .utf8)
+        XCTAssertNotEqual(run(), 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path), "another tool's file stays")
+
+        try "nameserver 127.0.0.1\nport 35354\n".write(to: file, atomically: true, encoding: .utf8)
+        XCTAssertNotEqual(run(), 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path), "Portside's file for another port stays")
+
+        try ResolverInstaller.expectedContents(dnsPort: 35353).write(to: file, atomically: true, encoding: .utf8)
+        XCTAssertEqual(run(), 0)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
     }
 
     func testLsofFieldParsing() {
@@ -141,7 +187,7 @@ final class DNSServerTests: XCTestCase {
     }
 
     func testPortCheckerSeesAListener() throws {
-        let server = DNSServer(port: 0)
+        let server = DNSServer(port: 0, zone: "test")
         try server.start()
         defer { server.stop() }
         XCTAssertFalse(PortChecker.isUDPPortFree(try XCTUnwrap(server.boundPort)))

@@ -8,18 +8,20 @@ struct Site: Identifiable, Codable, Hashable {
     var extras: [ProcessConfig] = []
     var autoStart: Bool = false
 
-    var domain: String { "\(name).test" }
-    var url: URL { URL(string: "http://\(domain)")! }
-
     var isStatic: Bool { main.isStatic }
 
     /// Main first, then extras in configured order.
     var processes: [ProcessConfig] { [main] + extras }
 
-    func domain(for process: ProcessConfig) -> String? {
-        if process.id == main.id { return domain }
+    func domain(in suffix: DomainSuffix) -> String {
+        "\(name).\(suffix.label)"
+    }
+
+    /// The main process gets the site's domain, an extra gets one only when it has a subdomain.
+    func domain(for process: ProcessConfig, in suffix: DomainSuffix) -> String? {
+        if process.id == main.id { return domain(in: suffix) }
         guard let sub = process.subdomain, !sub.isEmpty else { return nil }
-        return "\(sub).\(domain)"
+        return "\(sub).\(domain(in: suffix))"
     }
 
     func workingDirectory(for process: ProcessConfig) -> String {

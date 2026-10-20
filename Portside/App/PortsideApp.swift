@@ -31,7 +31,14 @@ struct PortsideApp: App {
         }
         .defaultSize(width: 860, height: 520)
 
-        Window("Set Up .test Domains", id: WindowID.resolverSetup) {
+        Window("Choose Your Local Domain", id: WindowID.onboarding) {
+            OnboardingView()
+                .environment(controller)
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+
+        Window("Set Up Domains", id: WindowID.resolverSetup) {
             ResolverSetupView()
                 .environment(controller)
         }

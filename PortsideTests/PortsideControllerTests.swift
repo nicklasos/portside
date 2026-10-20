@@ -118,8 +118,76 @@ final class PortsideControllerTests: XCTestCase {
 
     func testURLsCarryANonDefaultProxyPort() async throws {
         let site = makeSite()
-        XCTAssertEqual(controller.url(for: site)?.absoluteString, "http://smartcity.test")
+        XCTAssertEqual(controller.url(for: site)?.absoluteString, "http://smartcity.localhost")
         controller.settings.proxyPort = 8080
-        XCTAssertEqual(controller.url(for: site, process: site.extras[0])?.absoluteString, "http://api.smartcity.test:8080")
+        XCTAssertEqual(controller.url(for: site, process: site.extras[0])?.absoluteString, "http://api.smartcity.localhost:8080")
+    }
+
+    private func makeController(resolving: [DomainSuffix: ResolutionStrategy]) -> PortsideController {
+        var configuration = PortsideController.Configuration.isolated(in: dir.appendingPathComponent("strategy"))
+        configuration.detectResolution = { resolving[$0] ?? .portsideDNS }
+        let controller = PortsideController(configuration: configuration)
+        controller.settings.dnsPort = 0
+        return controller
+    }
+
+    func testSystemResolvedSuffixRunsNoDNSServer() async {
+        let controller = makeController(resolving: [.localhost: .system])
+        await controller.chooseDomainSuffix(.localhost)
+        XCTAssertTrue(controller.settings.hasChosenDomainSuffix)
+        XCTAssertEqual(controller.resolution, .system)
+        XCTAssertEqual(controller.dnsState, .stopped)
+        XCTAssertFalse(controller.needsResolverSetup)
+        XCTAssertFalse(controller.shouldPromptForResolver)
+        await controller.shutdown()
+    }
+
+    func testSuffixNeedingPortsideDNSStartsItForThatZoneAndAsksForTheResolver() async throws {
+        let controller = makeController(resolving: [.localhost: .system])
+        await controller.chooseDomainSuffix(.test)
+        XCTAssertEqual(controller.resolution, .portsideDNS)
+        guard case .running(let port) = controller.dnsState else { return XCTFail("DNS not running: \(controller.dnsState)") }
+        XCTAssertGreaterThan(port, 0)
+        XCTAssertTrue(controller.needsResolverSetup)
+        XCTAssertTrue(controller.shouldPromptForResolver)
+        XCTAssertEqual(controller.url(for: makeSite())?.absoluteString, "http://smartcity.test")
+
+        await controller.chooseDomainSuffix(.localhost)
+        XCTAssertEqual(controller.dnsState, .stopped, "switching to a system-resolved suffix stops the server")
+        await controller.shutdown()
+    }
+
+    func testSuffixChangeWhileRunningAsksForRestart() async throws {
+        let site = makeSite()
+        try await controller.save(edited: site)
+        await controller.chooseDomainSuffix(.localhost)
+        XCTAssertNil(controller.domainNotice, "no change, nothing running")
+        await controller.start(site)
+        await controller.chooseDomainSuffix(try DomainSuffix.custom("loc").get())
+        XCTAssertEqual(controller.domainNotice, "Restart running sites to update PORTSIDE_URL.")
+        XCTAssertEqual(controller.settings.domainSuffix.label, "loc")
+    }
+
+    func testOnlyPortsidesOwnLeftoverResolverIsOfferedForRemoval() async throws {
+        let controller = makeController(resolving: [:])
+        let resolvers = controller.configuration.resolverDirectory
+        try FileManager.default.createDirectory(at: resolvers, withIntermediateDirectories: true)
+        try ResolverInstaller.expectedContents(dnsPort: 0).write(to: resolvers.appendingPathComponent("test"), atomically: true, encoding: .utf8)
+        try "nameserver 127.0.0.1\n".write(to: resolvers.appendingPathComponent("loc"), atomically: true, encoding: .utf8)
+
+        await controller.chooseDomainSuffix(.test)
+        XCTAssertEqual(controller.resolverStatus, .installed)
+        XCTAssertEqual(controller.staleResolvers, [], "the file in use is not stale")
+
+        await controller.chooseDomainSuffix(.localhost)
+        XCTAssertEqual(controller.staleResolvers, [.test], "loc belongs to another tool")
+        await controller.shutdown()
+    }
+
+    func testSuffixSurvivesRelaunch() async throws {
+        await controller.chooseDomainSuffix(try DomainSuffix.custom("loc").get())
+        let reloaded = AppSettings(defaults: controller.configuration.defaults)
+        XCTAssertEqual(reloaded.domainSuffix.label, "loc")
+        XCTAssertTrue(reloaded.hasChosenDomainSuffix)
     }
 }

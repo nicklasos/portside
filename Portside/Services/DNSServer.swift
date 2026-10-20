@@ -2,17 +2,20 @@ import Foundation
 import NIOCore
 import NIOPosix
 
-/// Answers every `*.test` name with loopback addresses so `/etc/resolver/test` can point at it.
+/// Answers every name under one zone, such as `test`, with loopback addresses, so
+/// `/etc/resolver/<zone>` can point at it.
 final class DNSServer {
     let port: Int
+    let zone: String
     /// The port actually bound; differs from `port` only when `port` is 0.
     private(set) var boundPort: Int?
 
     private var group: MultiThreadedEventLoopGroup?
     private var channel: Channel?
 
-    init(port: Int) {
+    init(port: Int, zone: String) {
         self.port = port
+        self.zone = zone.lowercased()
     }
 
     deinit {
@@ -22,11 +25,12 @@ final class DNSServer {
     func start() throws {
         guard channel == nil else { return }
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        let zone = zone
         do {
             let channel = try DatagramBootstrap(group: group)
                 .channelInitializer { channel in
                     channel.eventLoop.makeCompletedFuture {
-                        try channel.pipeline.syncOperations.addHandler(QueryHandler())
+                        try channel.pipeline.syncOperations.addHandler(QueryHandler(zone: zone))
                     }
                 }
                 .bind(host: "127.0.0.1", port: port)
@@ -68,12 +72,12 @@ final class DNSServer {
         RecordType.aaaa: [UInt8](repeating: 0, count: 15) + [1],
     ]
 
-    /// Still loopback, but no other `.test` resolver (Herd, Valet, dnsmasq) answers with it,
+    /// Still loopback, but no other resolver (Herd, Valet, dnsmasq) answers with it,
     /// so the self-test can tell Portside's resolver apart from theirs.
     static let selfTestAddress: [UInt8] = [127, 0, 0, 53]
 
     /// Builds the reply for one raw DNS query, or `nil` when the packet should be dropped.
-    static func response(to query: [UInt8]) -> [UInt8]? {
+    static func response(to query: [UInt8], zone: String) -> [UInt8]? {
         guard query.count >= 12 else { return nil }
         let flags = u16(query, 2)
         let isResponse = flags & 0x8000 != 0
@@ -97,8 +101,8 @@ final class DNSServer {
         let qclass = u16(query, offset + 2)
         let question = query[12..<offset + 4]
 
-        let inZone = labels.last == "test"
-        let isSelfTest = labels.joined(separator: ".") == ResolverInstaller.selfTestHost
+        let inZone = labels.last == zone
+        let isSelfTest = labels.joined(separator: ".") == ResolverInstaller.selfTestHost(zone: zone)
         var answerTypes: [UInt16] = []
         if inZone, qclass == RecordClass.internet || qclass == RecordClass.any {
             answerTypes = qtype == RecordType.any ? [RecordType.a, RecordType.aaaa] : [qtype].filter { loopback[$0] != nil }
@@ -136,9 +140,15 @@ private final class QueryHandler: ChannelInboundHandler {
     typealias InboundIn = AddressedEnvelope<ByteBuffer>
     typealias OutboundOut = AddressedEnvelope<ByteBuffer>
 
+    let zone: String
+
+    init(zone: String) {
+        self.zone = zone
+    }
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let envelope = unwrapInboundIn(data)
-        guard let reply = DNSServer.response(to: Array(envelope.data.readableBytesView)) else { return }
+        guard let reply = DNSServer.response(to: Array(envelope.data.readableBytesView), zone: zone) else { return }
         let buffer = context.channel.allocator.buffer(bytes: reply)
         context.writeAndFlush(wrapOutboundOut(AddressedEnvelope(remoteAddress: envelope.remoteAddress, data: buffer)), promise: nil)
     }

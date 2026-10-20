@@ -25,33 +25,43 @@ final class CaddyConfigBuilderTests: XCTestCase {
     private let logs = URL(fileURLWithPath: "\(fixtureRoot)/logs")
 
     func testPlanExampleSmartcityWithApiExtra() throws {
-        try assertGolden("smartcity", CaddyConfigBuilder.build(sites: [smartcity], enabledStaticSites: [], proxyPort: 80, adminPort: 2019, logsDirectory: nil))
+        try assertGolden("smartcity", CaddyConfigBuilder.build(sites: [smartcity], suffix: .test, enabledStaticSites: [], proxyPort: 80, adminPort: 2019, logsDirectory: nil))
+    }
+
+    func testLocalhostSuffixMatchesLocalhostHosts() throws {
+        try assertGolden("smartcity-localhost", CaddyConfigBuilder.build(sites: [smartcity], suffix: .localhost, enabledStaticSites: [], proxyPort: 80, adminPort: 2019, logsDirectory: nil))
+    }
+
+    func testCustomSuffixRoutesStaticSiteAndItsAccessLog() throws {
+        let loc = try DomainSuffix.custom("loc").get()
+        let routes = CaddyConfigBuilder.hostRoutes(sites: [smartcity, docs], suffix: loc, enabledStaticSites: [docs.id], logging: false)
+        XCTAssertEqual(routes.map(\.host), ["api.smartcity.loc", "docs.loc", "smartcity.loc"])
     }
 
     func testPreserveHostPassesOriginalHost() throws {
-        try assertGolden("preserve-host", CaddyConfigBuilder.build(sites: [legacy], enabledStaticSites: [], proxyPort: 8080, adminPort: 2019, logsDirectory: nil))
+        try assertGolden("preserve-host", CaddyConfigBuilder.build(sites: [legacy], suffix: .test, enabledStaticSites: [], proxyPort: 8080, adminPort: 2019, logsDirectory: nil))
     }
 
     func testStaticSiteEnabledServesFolderWithAccessLog() throws {
-        try assertGolden("static-enabled", CaddyConfigBuilder.build(sites: [docs], enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs))
+        try assertGolden("static-enabled", CaddyConfigBuilder.build(sites: [docs], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs))
     }
 
     func testStaticSiteDisabledShowsStoppedPage() throws {
-        try assertGolden("static-disabled", CaddyConfigBuilder.build(sites: [docs], enabledStaticSites: [], proxyPort: 8080, adminPort: 2019, logsDirectory: nil))
+        try assertGolden("static-disabled", CaddyConfigBuilder.build(sites: [docs], suffix: .test, enabledStaticSites: [], proxyPort: 8080, adminPort: 2019, logsDirectory: nil))
     }
 
     func testNoSitesOnlyHasUnknownHostFallback() throws {
-        try assertGolden("empty", CaddyConfigBuilder.build(sites: [], enabledStaticSites: [], proxyPort: 8080, adminPort: 2019, logsDirectory: nil))
+        try assertGolden("empty", CaddyConfigBuilder.build(sites: [], suffix: .test, enabledStaticSites: [], proxyPort: 8080, adminPort: 2019, logsDirectory: nil))
     }
 
     /// The config used for the live proof: every route kind on an alternate proxy port.
     func testAllSitesOnAlternateProxyPort() throws {
-        try assertGolden("all-8080", CaddyConfigBuilder.build(sites: [smartcity, legacy, docs], enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs))
+        try assertGolden("all-8080", CaddyConfigBuilder.build(sites: [smartcity, legacy, docs], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs))
     }
 
     func testOutputIsIndependentOfSiteOrder() {
-        let a = CaddyConfigBuilder.build(sites: [smartcity, legacy, docs], enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
-        let b = CaddyConfigBuilder.build(sites: [docs, legacy, smartcity], enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
+        let a = CaddyConfigBuilder.build(sites: [smartcity, legacy, docs], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
+        let b = CaddyConfigBuilder.build(sites: [docs, legacy, smartcity], suffix: .test, enabledStaticSites: [docs.id], proxyPort: 8080, adminPort: 2019, logsDirectory: logs)
         XCTAssertEqual(a, b)
     }
 

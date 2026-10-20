@@ -147,10 +147,11 @@ struct MenuBarView: View {
         case .stopped, .running:
             break
         }
-        if controller.configuration.isLive, controller.resolverStatus != .installed {
+        if controller.configuration.isLive, controller.needsResolverSetup {
+            let suffix = controller.settings.domainSuffix.display
             let message = controller.resolverStatus == .missing
-                ? ".test domains are not set up yet"
-                : "Another tool answers .test lookups"
+                ? "\(suffix) domains are not set up yet"
+                : "Another tool answers \(suffix) lookups"
             items.append(Banner(message: message, action: .init(title: "Details…") { open(.resolverSetup) }))
         }
         if let error = controller.store.loadError {

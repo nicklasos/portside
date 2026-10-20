@@ -120,7 +120,7 @@ final class ProcessManagerTests: XCTestCase {
         await manager.start(site)
         try await waitUntil("exit") { manager.state(of: site.main.id) == .exited(code: 0) }
         let buffer = manager.buffer(for: site.main.id)
-        XCTAssertEqual(printed("env", in: buffer), ["5474 localhost 1 smartcity http://smartcity.test bar xterm-256color 1"])
+        XCTAssertEqual(printed("env", in: buffer), ["5474 localhost 1 smartcity http://smartcity.localhost bar xterm-256color 1"])
         XCTAssertEqual(printed("cwd", in: buffer).map { URL(fileURLWithPath: $0).resolvingSymlinksInPath() }, [dir.resolvingSymlinksInPath()])
     }
 

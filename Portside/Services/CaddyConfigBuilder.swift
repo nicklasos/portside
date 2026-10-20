@@ -4,7 +4,7 @@ import Foundation
 enum CaddyConfigBuilder {
     static let serverName = "portside"
 
-    /// What a single `*.test` host does. The builder decides this first, then renders JSON from it.
+    /// What a single site host does. The builder decides this first, then renders JSON from it.
     enum Target: Equatable {
         case proxy(upstream: String, preserveHost: Bool)
         case files(root: String, logger: String?)
@@ -16,8 +16,8 @@ enum CaddyConfigBuilder {
         var target: Target
     }
 
-    static func build(sites: [Site], enabledStaticSites: Set<Site.ID>, proxyPort: Int, adminPort: Int, logsDirectory: URL?) -> Data {
-        let routes = hostRoutes(sites: sites, enabledStaticSites: enabledStaticSites, logging: logsDirectory != nil)
+    static func build(sites: [Site], suffix: DomainSuffix, enabledStaticSites: Set<Site.ID>, proxyPort: Int, adminPort: Int, logsDirectory: URL?) -> Data {
+        let routes = hostRoutes(sites: sites, suffix: suffix, enabledStaticSites: enabledStaticSites, logging: logsDirectory != nil)
         let proxiedHosts = routes.compactMap { if case .proxy = $0.target { $0.host } else { nil } }
 
         var server: [String: Any] = [
@@ -37,7 +37,7 @@ enum CaddyConfigBuilder {
             "admin": ["listen": "127.0.0.1:\(adminPort)", "config": ["persist": false]],
         ]
 
-        let staticLogs = logsDirectory.map { staticAccessLogs(sites: sites, in: $0) } ?? []
+        let staticLogs = logsDirectory.map { staticAccessLogs(sites: sites, suffix: suffix, in: $0) } ?? []
         if !staticLogs.isEmpty {
             server["logs"] = [
                 "logger_names": Dictionary(uniqueKeysWithValues: staticLogs.map { ($0.host, [$0.logger]) }),
@@ -64,11 +64,11 @@ enum CaddyConfigBuilder {
         logsDirectory.appendingPathComponent(siteName, isDirectory: true).appendingPathComponent("access.log")
     }
 
-    static func hostRoutes(sites: [Site], enabledStaticSites: Set<Site.ID>, logging: Bool) -> [HostRoute] {
+    static func hostRoutes(sites: [Site], suffix: DomainSuffix, enabledStaticSites: Set<Site.ID>, logging: Bool) -> [HostRoute] {
         var routes: [HostRoute] = []
         for site in sites {
             for process in site.processes {
-                guard let host = site.domain(for: process) else { continue }
+                guard let host = site.domain(for: process, in: suffix) else { continue }
                 let target: Target
                 if process.id == site.main.id, process.isStatic {
                     let logger = logging ? loggerName(site) : nil
@@ -86,10 +86,10 @@ enum CaddyConfigBuilder {
         "portside-\(site.name)"
     }
 
-    private static func staticAccessLogs(sites: [Site], in directory: URL) -> [(host: String, logger: String, file: URL)] {
+    private static func staticAccessLogs(sites: [Site], suffix: DomainSuffix, in directory: URL) -> [(host: String, logger: String, file: URL)] {
         sites.filter(\.isStatic)
             .sorted { $0.name < $1.name }
-            .map { ($0.domain, loggerName($0), accessLogFile(siteName: $0.name, in: directory)) }
+            .map { ($0.domain(in: suffix), loggerName($0), accessLogFile(siteName: $0.name, in: directory)) }
     }
 
     private static func render(_ route: HostRoute) -> [String: Any] {

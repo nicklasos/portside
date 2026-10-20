@@ -27,6 +27,7 @@
 		67A3C91F9D1A67F74599AFD8 /* UpdaterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDD204E84FBA74747C50C60 /* UpdaterService.swift */; };
 		689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B75ED958BAF6F739693E706A /* SiteStoreTests.swift */; };
 		6A4F12E844DA8DBE2FE9F9CC /* ResolverInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8F2D38E93C20174A58FDA9 /* ResolverInstaller.swift */; };
+		6F4BE6CFF343ADAA8B5ACE51 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650904D334B4EDC791F61EE5 /* OnboardingView.swift */; };
 		700E3B06411E0BB6EDFBB5F4 /* ProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4876EF5F12CB582CF7334AB /* ProxyManager.swift */; };
 		71F5BA90FCC26C045875CCFE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE7F056C6696C3BCD6DE74EC /* Assets.xcassets */; };
 		725E316DDF0AB233B7CDEE12 /* caddy-static-enabled.json in Resources */ = {isa = PBXBuildFile; fileRef = 0E955A32D2B0FE5DF36D8FA9 /* caddy-static-enabled.json */; };
@@ -40,6 +41,7 @@
 		9A83B0E1E957DBA4D2A7E8CF /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = EDE65FD1F58D50D09639D599 /* Sparkle */; };
 		9BA732FE0EC57F64ECA64A59 /* AppPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD92124D73C1E797842E28D /* AppPaths.swift */; };
 		9C295D580C32628CF8548854 /* Notifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF4365EECD9AC26E7D6BC95 /* Notifier.swift */; };
+		9E24FBD16D62EE23EB911916 /* DomainSuffixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A1FEFE7EEA65CAFCA60A38 /* DomainSuffixTests.swift */; };
 		A1235826D8C832BBDF604019 /* ProcessEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3715245E27D23C61B1B4A557 /* ProcessEditorView.swift */; };
 		A9322FAF6AFAE29A4E8BB32C /* caddy-all-8080.json in Resources */ = {isa = PBXBuildFile; fileRef = CF3E75E21F471F440D47239D /* caddy-all-8080.json */; };
 		ADFB3CB8BBE8766C0505B358 /* caddy-preserve-host.json in Resources */ = {isa = PBXBuildFile; fileRef = AB7C1FBA86E85CFC2E9B1C19 /* caddy-preserve-host.json */; };
@@ -60,6 +62,9 @@
 		F6F7CF1672AB4EA42150AE23 /* caddy-smartcity.json in Resources */ = {isa = PBXBuildFile; fileRef = 2C87E74022493205867441CC /* caddy-smartcity.json */; };
 		F9031FD8A8FD0223B0CCD184 /* caddy-static-disabled.json in Resources */ = {isa = PBXBuildFile; fileRef = 7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */; };
 		F98FD6DBC7334F595CDAA4F0 /* LogBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE921757008CF0B17FC9AC8C /* LogBuffer.swift */; };
+		FA14000B95C46E8E1E6CD701 /* SystemResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B589FAAA0B375D0FBBCCC451 /* SystemResolver.swift */; };
+		FD5664646C7870334E4E2912 /* DomainSuffix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0432C68AD95AEF901F67FC47 /* DomainSuffix.swift */; };
+		FFBE3E50133251D458D3E01D /* DomainSuffixPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FD2BCEC89B8AC649183F3C /* DomainSuffixPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +79,7 @@
 
 /* Begin PBXFileReference section */
 		028DF3D1446FAD09B9FEE70D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0432C68AD95AEF901F67FC47 /* DomainSuffix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainSuffix.swift; sourceTree = "<group>"; };
 		044CCB785BFB4C254C9E1C41 /* MenuBarIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIcon.swift; sourceTree = "<group>"; };
 		04E6D44372EB5C37A88DDB58 /* ANSIParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ANSIParser.swift; sourceTree = "<group>"; };
 		088C92B744950539E4776247 /* PortsideController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideController.swift; sourceTree = "<group>"; };
@@ -99,6 +105,7 @@
 		55C00B2F242EFCA6688F4557 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		569D3B82FCEADAC5D817C283 /* StatusDot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusDot.swift; sourceTree = "<group>"; };
 		5E4F79E93C4282F89A51920A /* DebugLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugLaunch.swift; sourceTree = "<group>"; };
+		650904D334B4EDC791F61EE5 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		693F1329B8E0E6246DD06F45 /* Portside.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portside.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		70CC3FF49FBCC1E9FFBB0929 /* DNSServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSServer.swift; sourceTree = "<group>"; };
 		753455F6BF71FBDE7D950E84 /* ManagedProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedProcess.swift; sourceTree = "<group>"; };
@@ -110,12 +117,14 @@
 		9270A7646452D32DB6A624FC /* SiteStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStatus.swift; sourceTree = "<group>"; };
 		95E46562988127AD742D4515 /* caddy-empty.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-empty.json"; sourceTree = "<group>"; };
 		967FFCE007FFC14C518701A8 /* AccessLogTail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessLogTail.swift; sourceTree = "<group>"; };
+		A2A1FEFE7EEA65CAFCA60A38 /* DomainSuffixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainSuffixTests.swift; sourceTree = "<group>"; };
 		A2CD73E937BA9AFD7C9FF00D /* SiteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStore.swift; sourceTree = "<group>"; };
 		A3371F8479F06873CE6C9225 /* SiteValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteValidation.swift; sourceTree = "<group>"; };
 		A928D3FA53478440B6618289 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		AB7C1FBA86E85CFC2E9B1C19 /* caddy-preserve-host.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-preserve-host.json"; sourceTree = "<group>"; };
 		AE921757008CF0B17FC9AC8C /* LogBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogBuffer.swift; sourceTree = "<group>"; };
 		B062112C573C758934A8D13C /* ANSIParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ANSIParserTests.swift; sourceTree = "<group>"; };
+		B589FAAA0B375D0FBBCCC451 /* SystemResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemResolver.swift; sourceTree = "<group>"; };
 		B75ED958BAF6F739693E706A /* SiteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStoreTests.swift; sourceTree = "<group>"; };
 		BFF4365EECD9AC26E7D6BC95 /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
 		C4876EF5F12CB582CF7334AB /* ProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyManager.swift; sourceTree = "<group>"; };
@@ -124,6 +133,7 @@
 		CF3E75E21F471F440D47239D /* caddy-all-8080.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-all-8080.json"; sourceTree = "<group>"; };
 		DB013570A77DEFBE17D837C2 /* Site.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
 		E85D59499ADE758CD5C70BF4 /* PortsideControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideControllerTests.swift; sourceTree = "<group>"; };
+		E8FD2BCEC89B8AC649183F3C /* DomainSuffixPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainSuffixPicker.swift; sourceTree = "<group>"; };
 		EB83C883AAF22B2978122F84 /* PortsideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideApp.swift; sourceTree = "<group>"; };
 		F21175A98E65DE30E0F070E2 /* ProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessManager.swift; sourceTree = "<group>"; };
 		F21FB895D295432BCCC2127D /* LogBufferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogBufferTests.swift; sourceTree = "<group>"; };
@@ -199,6 +209,7 @@
 				C4876EF5F12CB582CF7334AB /* ProxyManager.swift */,
 				0E8F2D38E93C20174A58FDA9 /* ResolverInstaller.swift */,
 				11BFDFC391E360490C37A697 /* Spawn.swift */,
+				B589FAAA0B375D0FBBCCC451 /* SystemResolver.swift */,
 				CDDD204E84FBA74747C50C60 /* UpdaterService.swift */,
 			);
 			path = Services;
@@ -231,6 +242,8 @@
 		8CC4C9A810AA6B11A757A087 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				E8FD2BCEC89B8AC649183F3C /* DomainSuffixPicker.swift */,
+				650904D334B4EDC791F61EE5 /* OnboardingView.swift */,
 				2FA92A86C2BC35736B26C8BF /* ResolverSetupView.swift */,
 				1F20E44E4E00039E06218385 /* SettingsView.swift */,
 			);
@@ -249,6 +262,7 @@
 		9910EB765AA901D42AD8A8F3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				0432C68AD95AEF901F67FC47 /* DomainSuffix.swift */,
 				1333F982FEFDE2D075BE268A /* ProcessConfig.swift */,
 				DB013570A77DEFBE17D837C2 /* Site.swift */,
 				9270A7646452D32DB6A624FC /* SiteStatus.swift */,
@@ -306,6 +320,7 @@
 				B062112C573C758934A8D13C /* ANSIParserTests.swift */,
 				7D4ABCFAE5C2CB16BC98433B /* CaddyConfigBuilderTests.swift */,
 				896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */,
+				A2A1FEFE7EEA65CAFCA60A38 /* DomainSuffixTests.swift */,
 				F21FB895D295432BCCC2127D /* LogBufferTests.swift */,
 				E85D59499ADE758CD5C70BF4 /* PortsideControllerTests.swift */,
 				3911AE3EB1EF738961CCA63E /* ProcessManagerTests.swift */,
@@ -462,6 +477,8 @@
 				DA44017B1516EEE78272853A /* CaddyConfigBuilder.swift in Sources */,
 				DF6BF6A7734522F2348B08CE /* DNSServer.swift in Sources */,
 				35C8770EB177C88392FACDBB /* DebugLaunch.swift in Sources */,
+				FD5664646C7870334E4E2912 /* DomainSuffix.swift in Sources */,
+				FFBE3E50133251D458D3E01D /* DomainSuffixPicker.swift in Sources */,
 				BD696FC1908EA6D273128BC1 /* FolderPicker.swift in Sources */,
 				F98FD6DBC7334F595CDAA4F0 /* LogBuffer.swift in Sources */,
 				1F8A7DE00CCCC386B35BBD52 /* LogTextView.swift in Sources */,
@@ -470,6 +487,7 @@
 				BA890D7D61347347F097EFCD /* MenuBarIcon.swift in Sources */,
 				10DDE4F46672C65FD62C12FF /* MenuBarView.swift in Sources */,
 				9C295D580C32628CF8548854 /* Notifier.swift in Sources */,
+				6F4BE6CFF343ADAA8B5ACE51 /* OnboardingView.swift in Sources */,
 				89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */,
 				8BC98AF13555429397A3A33A /* PortChecker.swift in Sources */,
 				D080D58553B1481A8AC4CDBB /* PortsideApp.swift in Sources */,
@@ -489,6 +507,7 @@
 				E1091483F80FEACBA38CE70A /* SiteValidation.swift in Sources */,
 				CA3B3DF28C7AB30F97684280 /* Spawn.swift in Sources */,
 				53F8EB82A887BE332F26B899 /* StatusDot.swift in Sources */,
+				FA14000B95C46E8E1E6CD701 /* SystemResolver.swift in Sources */,
 				67A3C91F9D1A67F74599AFD8 /* UpdaterService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -500,6 +519,7 @@
 				DFD90D7DB8ADC8AAA07BA68F /* ANSIParserTests.swift in Sources */,
 				76CFF1943138921FC4B6AE16 /* CaddyConfigBuilderTests.swift in Sources */,
 				C67A3783DB88C70ABC93BDDB /* DNSServerTests.swift in Sources */,
+				9E24FBD16D62EE23EB911916 /* DomainSuffixTests.swift in Sources */,
 				2DA85BC5843F015E271969A9 /* LogBufferTests.swift in Sources */,
 				3CCACB1C97D0123DE0A54FE4 /* PortsideControllerTests.swift in Sources */,
 				868804C8E272D68B9B15EA00 /* ProcessManagerTests.swift in Sources */,

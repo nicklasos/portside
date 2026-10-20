@@ -44,6 +44,7 @@ struct MenuBarLabel: View {
             switch window {
             case .editor(let target): openWindow(id: WindowID.editor, value: target)
             case .logs(let site): openWindow(id: WindowID.logs, value: site)
+            case .onboarding: openWindow(id: WindowID.onboarding)
             case .resolverSetup: openWindow(id: WindowID.resolverSetup)
             case .settings: openSettings()
             }
@@ -58,4 +59,5 @@ enum WindowID {
     static let editor = "editor"
     static let logs = "logs"
     static let resolverSetup = "resolver-setup"
+    static let onboarding = "onboarding"
 }

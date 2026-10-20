@@ -99,7 +99,7 @@ struct SiteEditorView: View {
                         TextField("", text: name, prompt: Text("smartcity"))
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 220)
-                        Text(".test").foregroundStyle(.secondary)
+                        Text(controller.settings.domainSuffix.display).foregroundStyle(.secondary)
                         Spacer()
                         Button {
                             controller.openURL(draft)

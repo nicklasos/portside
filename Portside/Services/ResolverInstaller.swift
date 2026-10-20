@@ -9,17 +9,20 @@ enum ResolverInstallError: Error, Equatable {
     case failed(String)
 }
 
-/// Owns `/etc/resolver/test`, which sends macOS's `.test` lookups to Portside's DNS server.
+/// Owns `/etc/resolver/<suffix>`, which sends macOS's lookups under that suffix to Portside's DNS server.
 enum ResolverInstaller {
-    static let resolverFile = URL(fileURLWithPath: "/etc/resolver/test")
-    static let selfTestHost = "portside-selftest.test"
+    static let directory = URL(fileURLWithPath: "/etc/resolver")
+
+    static func resolverFile(for suffix: DomainSuffix, in directory: URL = directory) -> URL {
+        directory.appendingPathComponent(suffix.label)
+    }
+
+    static func selfTestHost(zone: String) -> String {
+        "portside-selftest.\(zone)"
+    }
 
     static func expectedContents(dnsPort: Int) -> String {
         "nameserver 127.0.0.1\nport \(dnsPort)\n"
-    }
-
-    static func status(dnsPort: Int) -> ResolverStatus {
-        status(contents: try? String(contentsOf: resolverFile, encoding: .utf8), dnsPort: dnsPort)
     }
 
     /// Compares directives, not bytes, so a hand-edited file with extra whitespace still counts.
@@ -30,9 +33,47 @@ enum ResolverInstaller {
 
     /// Prompts for an administrator password, writes the resolver file and flushes the DNS caches.
     /// Runs NSAppleScript, so call it from the main thread.
-    static func install(dnsPort: Int) throws {
-        guard let script = NSAppleScript(source: appleScriptSource(dnsPort: dnsPort)) else {
-            throw ResolverInstallError.failed("Could not compile the install script")
+    static func install(suffix: DomainSuffix, dnsPort: Int) throws {
+        try runPrivileged(installCommand(suffix: suffix, dnsPort: dnsPort))
+    }
+
+    /// Removes the resolver file only while it still holds exactly what Portside writes, so another
+    /// tool's file is never deleted. The check runs inside the privileged command, next to the `rm`.
+    static func uninstall(suffix: DomainSuffix, dnsPort: Int) throws {
+        try runPrivileged(uninstallCommand(suffix: suffix, dnsPort: dnsPort))
+    }
+
+    static func installCommand(suffix: DomainSuffix, dnsPort: Int) -> String {
+        "mkdir -p \(directory.path) && printf '\(printfBody(dnsPort))' > \(resolverFile(for: suffix).path) && \(flushCaches)"
+    }
+
+    static func uninstallCommand(suffix: DomainSuffix, dnsPort: Int) -> String {
+        let file = resolverFile(for: suffix).path
+        return "if [ \"$(cat \(file))\" = \"$(printf '\(printfBody(dnsPort))')\" ]; then rm \(file) && \(flushCaches); else echo 'The file no longer holds the Portside resolver, so it was left in place.' >&2; exit 1; fi"
+    }
+
+    static func appleScriptSource(shellCommand: String) -> String {
+        let escaped = shellCommand
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        return "do shell script \"\(escaped)\" with administrator privileges"
+    }
+
+    /// True when the system resolver sends `portside-selftest.<suffix>` to Portside's own DNS server,
+    /// which alone answers it with `DNSServer.selfTestAddress`.
+    static func selfTest(suffix: DomainSuffix) async -> Bool {
+        await SystemResolver.addresses(of: selfTestHost(zone: suffix.label)).contains(DNSServer.selfTestAddress)
+    }
+
+    private static let flushCaches = "(dscacheutil -flushcache; killall -HUP mDNSResponder; true)"
+
+    private static func printfBody(_ dnsPort: Int) -> String {
+        expectedContents(dnsPort: dnsPort).replacingOccurrences(of: "\n", with: "\\n")
+    }
+
+    private static func runPrivileged(_ shellCommand: String) throws {
+        guard let script = NSAppleScript(source: appleScriptSource(shellCommand: shellCommand)) else {
+            throw ResolverInstallError.failed("Could not compile the admin script")
         }
         var error: NSDictionary?
         script.executeAndReturnError(&error)
@@ -41,46 +82,6 @@ enum ResolverInstaller {
             throw ResolverInstallError.cancelled
         }
         throw ResolverInstallError.failed(error[NSAppleScript.errorMessage] as? String ?? "Unknown error")
-    }
-
-    static func shellCommand(dnsPort: Int) -> String {
-        let body = expectedContents(dnsPort: dnsPort).replacingOccurrences(of: "\n", with: "\\n")
-        return "mkdir -p /etc/resolver && printf '\(body)' > \(resolverFile.path) && (dscacheutil -flushcache; killall -HUP mDNSResponder; true)"
-    }
-
-    static func appleScriptSource(dnsPort: Int) -> String {
-        let escaped = shellCommand(dnsPort: dnsPort)
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-        return "do shell script \"\(escaped)\" with administrator privileges"
-    }
-
-    /// True when the system resolver sends `portside-selftest.test` to Portside's own DNS server,
-    /// which alone answers it with `DNSServer.selfTestAddress`.
-    static func selfTest() async -> Bool {
-        await Task.detached { resolvesToPortside(selfTestHost) }.value
-    }
-
-    private static func resolvesToPortside(_ host: String) -> Bool {
-        var hints = addrinfo()
-        hints.ai_family = AF_INET
-        hints.ai_socktype = SOCK_STREAM
-        var result: UnsafeMutablePointer<addrinfo>?
-        guard getaddrinfo(host, nil, &hints, &result) == 0, let first = result else { return false }
-        defer { freeaddrinfo(first) }
-        var cursor: UnsafeMutablePointer<addrinfo>? = first
-        while let info = cursor {
-            if let addr = info.pointee.ai_addr, isSelfTestAddress(addr) { return true }
-            cursor = info.pointee.ai_next
-        }
-        return false
-    }
-
-    private static func isSelfTestAddress(_ addr: UnsafeMutablePointer<sockaddr>) -> Bool {
-        guard Int32(addr.pointee.sa_family) == AF_INET else { return false }
-        return addr.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { pointer in
-            withUnsafeBytes(of: pointer.pointee.sin_addr.s_addr) { $0.elementsEqual(DNSServer.selfTestAddress) }
-        }
     }
 
     private static func directives(_ contents: String) -> [String] {

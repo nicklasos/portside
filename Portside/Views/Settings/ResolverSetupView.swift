@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Explains `/etc/resolver/test` before the one administrator prompt. Never installs on its own:
-/// another tool (Herd, Valet, dnsmasq) may own `.test`, and replacing its file would break it.
+/// Explains `/etc/resolver/<suffix>` before the one administrator prompt. Never installs on its own:
+/// another tool (Herd, Valet, dnsmasq) may own the suffix, and replacing its file would break it.
 struct ResolverSetupView: View {
     @Environment(PortsideController.self) private var controller
     @Environment(\.dismiss) private var dismiss
@@ -29,11 +29,14 @@ struct ResolverSetupView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 
+    private var suffix: DomainSuffix { controller.settings.domainSuffix }
+    private var file: String { ResolverInstaller.resolverFile(for: suffix).path }
+
     private var title: String {
         switch controller.resolverStatus {
-        case .installed: ".test domains are set up"
-        case .missing: "Set up .test domains"
-        case .mismatched: "Another tool handles .test"
+        case .installed: "\(suffix.display) domains are set up"
+        case .missing: "Set up \(suffix.display) domains"
+        case .mismatched: "Another tool handles \(suffix.display)"
         }
     }
 
@@ -42,17 +45,17 @@ struct ResolverSetupView: View {
         let port = controller.settings.dnsPort
         switch controller.resolverStatus {
         case .installed:
-            Text("macOS sends every `.test` lookup to Portside on 127.0.0.1:\(port).")
+            Text("macOS sends every `\(suffix.display)` lookup to Portside on 127.0.0.1:\(port).")
             selfTestLine
         case .missing:
-            Text("Portside answers `*.test` names itself, on 127.0.0.1:\(port). For macOS to ask it, Portside writes one small file, `/etc/resolver/test`:")
+            Text("Portside answers `*\(suffix.display)` names itself, on 127.0.0.1:\(port). For macOS to ask it, Portside writes one small file, `\(file)`:")
             codeBlock(ResolverInstaller.expectedContents(dnsPort: port))
-            Text("Writing to `/etc` needs your administrator password once. Nothing else on your Mac changes, and you can remove it later with `sudo rm /etc/resolver/test`.")
+            Text("Writing to `/etc` needs your administrator password once. Nothing else on your Mac changes, and you can remove it later with `sudo rm \(file)`.")
                 .foregroundStyle(.secondary)
         case .mismatched:
-            Text("`/etc/resolver/test` already exists and sends `.test` lookups somewhere else. Another tool, for example Laravel Herd, Valet or dnsmasq, probably handles `.test` today. Its current content:")
+            Text("`\(file)` already exists and sends `\(suffix.display)` lookups somewhere else. Another tool, for example Laravel Herd, Valet or dnsmasq, probably handles `\(suffix.display)` today. Its current content:")
             codeBlock(controller.resolverContents ?? "")
-            Text("Installing routes `.test` to Portside instead (\(ResolverInstaller.expectedContents(dnsPort: port).replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespaces))). Sites served by that other tool will stop resolving until you switch back. Portside's sites still work at `localhost` ports either way.")
+            Text("Installing routes `\(suffix.display)` to Portside instead (\(ResolverInstaller.expectedContents(dnsPort: port).replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespaces))). Sites served by that other tool will stop resolving until you switch back. To keep both, choose `.localhost` in Settings › Network.")
                 .foregroundStyle(.secondary)
         }
     }
@@ -75,7 +78,7 @@ struct ResolverSetupView: View {
                 dismiss()
             }
             .keyboardShortcut(.cancelAction)
-            Button("Use Portside for .test") { controller.installResolver() }
+            Button("Use Portside for \(suffix.display)") { controller.installResolver() }
                 .disabled(controller.isInstallingResolver)
         }
     }
@@ -83,7 +86,7 @@ struct ResolverSetupView: View {
     @ViewBuilder
     private var selfTestLine: some View {
         switch controller.resolverSelfTest {
-        case true?: Label("Responding: portside-selftest.test resolves through Portside", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+        case true?: Label("Responding: \(ResolverInstaller.selfTestHost(zone: suffix.label)) resolves through Portside", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
         case false?: Label("Not responding yet. Try again in a few seconds, or Repair from Settings.", systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
         case nil: Label("Checking…", systemImage: "clock").foregroundStyle(.secondary)
         }

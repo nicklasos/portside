@@ -9,6 +9,7 @@ enum EditorTarget: Codable, Hashable {
 enum AppWindow: Hashable {
     case editor(EditorTarget)
     case logs(Site.ID)
+    case onboarding
     case resolverSetup
     case settings
 }
@@ -35,16 +36,24 @@ final class PortsideController {
         var defaults: UserDefaults
         var supportDirectory: URL
         var logsDirectory: URL
-        /// False for the unit-test host: no servers, no notifications, no updater.
+        /// Where resolver files are read from. Writes always go to `/etc/resolver` through the admin prompt.
+        var resolverDirectory: URL
+        var detectResolution: @Sendable (DomainSuffix) async -> ResolutionStrategy
+        /// False for the unit-test host: no servers at launch, no notifications, no updater.
         var isLive: Bool
 
-        static let live = Configuration(defaults: .standard, supportDirectory: AppPaths.supportDirectory, logsDirectory: AppPaths.logsDirectory, isLive: true)
+        static let live = Configuration(
+            defaults: .standard, supportDirectory: AppPaths.supportDirectory, logsDirectory: AppPaths.logsDirectory,
+            resolverDirectory: ResolverInstaller.directory, detectResolution: { await ResolutionStrategy.detect($0) }, isLive: true
+        )
 
         static func isolated(in directory: URL) -> Configuration {
             Configuration(
                 defaults: UserDefaults(suiteName: "portside-\(UUID().uuidString)")!,
                 supportDirectory: directory.appendingPathComponent("support", isDirectory: true),
                 logsDirectory: directory.appendingPathComponent("logs", isDirectory: true),
+                resolverDirectory: directory.appendingPathComponent("resolver", isDirectory: true),
+                detectResolution: { _ in .system },
                 isLive: false
             )
         }
@@ -63,9 +72,15 @@ final class PortsideController {
     let configuration: Configuration
 
     private(set) var dnsState: DNSState = .stopped
+    /// nil while the probe for the current suffix runs.
+    private(set) var resolution: ResolutionStrategy?
     private(set) var resolverStatus: ResolverStatus = .missing
-    /// What `/etc/resolver/test` holds now, shown when another tool owns `.test`.
+    /// What `/etc/resolver/<suffix>` holds now, shown when another tool owns the suffix.
     private(set) var resolverContents: String?
+    /// Portside's own resolver files for suffixes no longer in use, which the user may remove.
+    private(set) var staleResolvers: [DomainSuffix] = []
+    /// Set after a suffix change while processes run with the old `PORTSIDE_URL`.
+    private(set) var domainNotice: String?
     /// nil until the self-test has run.
     private(set) var resolverSelfTest: Bool?
     private(set) var resolverError: String?
@@ -84,7 +99,7 @@ final class PortsideController {
     }
     @ObservationIgnored private var pendingWindows: [AppWindow] = []
 
-    private static let dismissedResolverKey = "resolverPromptDismissedContents"
+    private var dismissedResolverKey: String { "resolverPromptDismissedContents.\(settings.domainSuffix.label)" }
 
     init(configuration: Configuration = .forCurrentProcess) {
         self.configuration = configuration
@@ -119,8 +134,17 @@ final class PortsideController {
         site.processes.contains { processes.state(of: $0.id).isAlive }
     }
 
+    func domain(for site: Site, process: ProcessConfig? = nil) -> String? {
+        site.domain(for: process ?? site.main, in: settings.domainSuffix)
+    }
+
     func url(for site: Site, process: ProcessConfig? = nil) -> URL? {
-        site.domain(for: process ?? site.main).map(settings.url(forDomain:))
+        domain(for: site, process: process).map(settings.url(forDomain:))
+    }
+
+    /// The suffix needs Portside's resolver file and it is not in place yet.
+    var needsResolverSetup: Bool {
+        resolution == .portsideDNS && resolverStatus != .installed
     }
 
     // MARK: - Lifecycle
@@ -128,16 +152,17 @@ final class PortsideController {
     func bootstrap() {
         guard configuration.isLive, !didBootstrap else { return }
         didBootstrap = true
-        startDNS()
-        refreshResolverStatus()
-        if shouldPromptForResolver { show(.resolverSetup) }
         notifier.activate()
+        if !settings.hasChosenDomainSuffix { show(.onboarding) }
+        Task {
+            await refreshResolution()
+            if settings.hasChosenDomainSuffix, shouldPromptForResolver { show(.resolverSetup) }
+        }
         Task {
             await proxy.start(sites: store.sites, enabledStaticSites: processes.enabledStaticSites)
             for site in store.sites where site.autoStart {
                 await start(site)
             }
-            await runResolverSelfTest()
         }
     }
 
@@ -145,9 +170,7 @@ final class PortsideController {
         async let stopped: Void = processes.stopAll()
         async let proxyStopped: Void = proxy.stop()
         _ = await (stopped, proxyStopped)
-        dns?.stop()
-        dns = nil
-        dnsState = .stopped
+        stopDNS()
     }
 
     // MARK: - Site intents
@@ -286,61 +309,87 @@ final class PortsideController {
         settings.proxyPort = proxyPort
         settings.caddyAdminPort = adminPort
         settings.dnsPort = dnsPort
-        if dnsChanged {
-            startDNS()
-            refreshResolverStatus()
-            await runResolverSelfTest()
-        }
+        if dnsChanged { await refreshResolution() }
         if proxyChanged { await restartProxy() }
     }
 
     func resetSettings() async {
         let old = (settings.proxyPort, settings.dnsPort, settings.caddyAdminPort)
         settings.resetToDefaults()
-        if old.1 != settings.dnsPort {
-            startDNS()
-            refreshResolverStatus()
-        }
+        if old.1 != settings.dnsPort { await refreshResolution() }
         if old.0 != settings.proxyPort || old.2 != settings.caddyAdminPort { await restartProxy() }
+    }
+
+    /// Moves every domain to `suffix` and sets up resolution for it. Running processes keep the
+    /// `PORTSIDE_URL` they started with, so the user is told to restart them.
+    func chooseDomainSuffix(_ suffix: DomainSuffix) async {
+        settings.hasChosenDomainSuffix = true
+        if suffix != settings.domainSuffix {
+            settings.domainSuffix = suffix
+            syncProxy()
+            domainNotice = store.sites.contains(where: isAnyProcessAlive) ? "Restart running sites to update PORTSIDE_URL." : nil
+        }
+        await refreshResolution()
+    }
+
+    /// Probes how the current suffix resolves, then runs Portside's DNS server only when macOS needs it.
+    func refreshResolution() async {
+        let suffix = settings.domainSuffix
+        resolution = nil
+        let strategy = await configuration.detectResolution(suffix)
+        guard suffix == settings.domainSuffix else { return }
+        resolution = strategy
+        switch strategy {
+        case .system: stopDNS()
+        case .portsideDNS: startDNS(zone: suffix.label)
+        }
+        refreshResolverStatus()
+        if strategy == .portsideDNS { await runResolverSelfTest() } else { resolverSelfTest = nil }
+    }
+
+    func detectResolution(for suffix: DomainSuffix) async -> ResolutionStrategy {
+        await configuration.detectResolution(suffix)
+    }
+
+    func resolverStatus(for suffix: DomainSuffix) -> ResolverStatus {
+        ResolverInstaller.status(contents: resolverContents(for: suffix), dnsPort: settings.dnsPort)
     }
 
     /// The only caller of `ResolverInstaller.install`, reached from an explicit button.
     func installResolver() {
-        isInstallingResolver = true
-        resolverError = nil
-        defer { isInstallingResolver = false }
-        do {
-            try ResolverInstaller.install(dnsPort: settings.dnsPort)
-        } catch ResolverInstallError.cancelled {
-            resolverError = "Cancelled. Nothing was changed."
-        } catch ResolverInstallError.failed(let message) {
-            resolverError = message
-        } catch {
-            resolverError = error.localizedDescription
-        }
-        refreshResolverStatus()
+        runAdminAction { try ResolverInstaller.install(suffix: settings.domainSuffix, dnsPort: settings.dnsPort) }
         Task { await runResolverSelfTest() }
+    }
+
+    /// The only caller of `ResolverInstaller.uninstall`, offered only for Portside's own stale files.
+    func removeResolver(for suffix: DomainSuffix) {
+        guard staleResolvers.contains(suffix) else { return }
+        runAdminAction { try ResolverInstaller.uninstall(suffix: suffix, dnsPort: settings.dnsPort) }
     }
 
     /// Remembers "Not now" for the file as it is, so an unchanged foreign resolver is not raised again.
     func dismissResolverPrompt() {
-        configuration.defaults.set(resolverContents ?? "", forKey: Self.dismissedResolverKey)
+        configuration.defaults.set(resolverContents ?? "", forKey: dismissedResolverKey)
     }
 
     func refreshResolverStatus() {
-        resolverContents = try? String(contentsOf: ResolverInstaller.resolverFile, encoding: .utf8)
+        let current = settings.domainSuffix
+        resolverContents = resolverContents(for: current)
         resolverStatus = ResolverInstaller.status(contents: resolverContents, dnsPort: settings.dnsPort)
+        let labels = (try? FileManager.default.contentsOfDirectory(atPath: configuration.resolverDirectory.path)) ?? []
+        staleResolvers = labels.sorted().compactMap(DomainSuffix.stored).filter { $0 != current && resolverStatus(for: $0) == .installed }
     }
 
     func runResolverSelfTest() async {
-        resolverSelfTest = await ResolverInstaller.selfTest()
+        resolverSelfTest = await ResolverInstaller.selfTest(suffix: settings.domainSuffix)
     }
 
     var shouldPromptForResolver: Bool {
+        guard resolution == .portsideDNS else { return false }
         switch resolverStatus {
-        case .installed: false
-        case .missing: true
-        case .mismatched: configuration.defaults.string(forKey: Self.dismissedResolverKey) != (resolverContents ?? "")
+        case .installed: return false
+        case .missing: return true
+        case .mismatched: return configuration.defaults.string(forKey: dismissedResolverKey) != (resolverContents ?? "")
         }
     }
 
@@ -351,22 +400,49 @@ final class PortsideController {
         proxy.apply(sites: store.sites, enabledStaticSites: processes.enabledStaticSites)
     }
 
-    private func startDNS() {
-        dns?.stop()
-        dns = nil
+    private func resolverContents(for suffix: DomainSuffix) -> String? {
+        try? String(contentsOf: ResolverInstaller.resolverFile(for: suffix, in: configuration.resolverDirectory), encoding: .utf8)
+    }
+
+    private func runAdminAction(_ action: () throws -> Void) {
+        isInstallingResolver = true
+        resolverError = nil
+        defer { isInstallingResolver = false }
+        do {
+            try action()
+        } catch ResolverInstallError.cancelled {
+            resolverError = "Cancelled. Nothing was changed."
+        } catch ResolverInstallError.failed(let message) {
+            resolverError = message
+        } catch {
+            resolverError = error.localizedDescription
+        }
+        refreshResolverStatus()
+    }
+
+    /// Keeps a server that already answers this zone on this port.
+    private func startDNS(zone: String) {
         let port = settings.dnsPort
+        if let dns, dns.zone == zone, dns.port == port { return }
+        stopDNS()
         guard PortChecker.isUDPPortFree(port) else {
             dnsState = .portInUse(port: port)
             return
         }
-        let server = DNSServer(port: port)
+        let server = DNSServer(port: port, zone: zone)
         do {
             try server.start()
             dns = server
-            dnsState = .running(port: port)
+            dnsState = .running(port: server.boundPort ?? port)
         } catch {
             dnsState = .failed(error.localizedDescription)
         }
+    }
+
+    private func stopDNS() {
+        dns?.stop()
+        dns = nil
+        dnsState = .stopped
     }
 
     private func processExitedUnexpectedly(site siteID: Site.ID, process processID: ProcessConfig.ID, code: Int32) {

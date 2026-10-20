@@ -25,7 +25,7 @@ struct ProcessEditorView: View {
                     .truncationMode(.middle)
                 DisclosureGroup("Advanced", isExpanded: $showsAdvanced) {
                     Toggle("Preserve Host header", isOn: $process.preserveHost)
-                        .help("Pass the browser's Host (\(site.domain(for: process) ?? "the domain")) to the server instead of \(process.upstream). Turn on for backends that route by host.")
+                        .help("Pass the browser's Host (\(controller.domain(for: site, process: process) ?? "the domain")) to the server instead of \(process.upstream). Turn on for backends that route by host.")
                         .padding(.top, 2)
                 }
                 .font(.system(size: 11))
@@ -48,7 +48,7 @@ struct ProcessEditorView: View {
                         TextField("", text: subdomain, prompt: Text("api"))
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 90)
-                        Text(".\(site.name.isEmpty ? "site" : site.name).test")
+                        Text(".\(site.name.isEmpty ? "site" : site.name)\(controller.settings.domainSuffix.display)")
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                             .fixedSize()
@@ -120,8 +120,8 @@ struct ProcessEditorView: View {
 
     private var preview: String {
         let upstream = "http://\(process.host.isEmpty ? "localhost" : process.host):\(process.port)"
-        guard let domain = site.domain(for: process), !site.name.isEmpty else {
-            return isMain ? "→ add a name to get a .test domain" : "→ no domain (internal only) · \(upstream)"
+        guard let domain = controller.domain(for: site, process: process), !site.name.isEmpty else {
+            return isMain ? "→ add a name to get a \(controller.settings.domainSuffix.display) domain" : "→ no domain (internal only) · \(upstream)"
         }
         let url = controller.settings.url(forDomain: domain).absoluteString
         if isMain, process.isStatic {

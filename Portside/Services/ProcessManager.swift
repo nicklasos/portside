@@ -177,7 +177,7 @@ final class ProcessManager {
             "PORTSIDE": "1",
             "PORTSIDE_SITE": site.name,
         ]
-        if let domain = site.domain(for: p) { env["PORTSIDE_URL"] = settings.url(forDomain: domain).absoluteString }
+        if let domain = site.domain(for: p, in: settings.domainSuffix) { env["PORTSIDE_URL"] = settings.url(forDomain: domain).absoluteString }
         env.merge(p.env) { $1 }
         env["TERM"] = "xterm-256color"
         env["FORCE_COLOR"] = "1"

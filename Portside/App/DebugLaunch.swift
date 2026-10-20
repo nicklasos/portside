@@ -2,7 +2,7 @@
 import AppKit
 import SwiftUI
 
-/// `-PortsideOpenWindow logs:<site>|editor:<site>|editor:new|settings|resolver|popover` opens a
+/// `-PortsideOpenWindow logs:<site>|editor:<site>|editor:new|settings|resolver|onboarding|popover` opens a
 /// surface at launch, so screenshots can be taken without clicking through the menu bar.
 /// `-PortsideSnapshot <file.png>` then renders that window to a PNG from inside the app, which
 /// needs no screen-recording permission, and writes the menu bar glyph variants next to it.
@@ -21,6 +21,7 @@ enum DebugLaunch {
             case "editor": controller.show(.editor(site.map { .edit($0.id) } ?? .new))
             case "settings": controller.show(.settings)
             case "resolver": controller.show(.resolverSetup)
+            case "onboarding": controller.show(.onboarding)
             case "popover": clickStatusItem()
             case "popover-window": showPopoverContentInWindow(controller)
             default: NSLog("Portside: unknown PortsideOpenWindow \(request)")

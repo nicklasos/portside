@@ -28,7 +28,7 @@ struct SiteRowView: View {
                     controller.show(.logs(site.id))
                     dismiss()
                 }
-                IconButton("arrow.up.right.square", help: "Open \(controller.url(for: site)?.absoluteString ?? site.domain)") {
+                IconButton("arrow.up.right.square", help: "Open \(controller.url(for: site)?.absoluteString ?? site.name)") {
                     controller.openURL(site)
                 }
                 moreMenu
@@ -86,7 +86,7 @@ struct SiteRowView: View {
     }
 
     private var domainsLine: String {
-        site.processes.compactMap { site.domain(for: $0) }.joined(separator: " · ")
+        site.processes.compactMap { controller.domain(for: site, process: $0) }.joined(separator: " · ")
     }
 
     private var tooltip: String {
@@ -101,7 +101,7 @@ struct SiteRowView: View {
         dismiss()
         let alert = NSAlert()
         alert.messageText = "Delete \(site.name)?"
-        alert.informativeText = "Its processes are stopped and \(site.domain) stops resolving to it. The folder on disk is not touched."
+        alert.informativeText = "Its processes are stopped and \(controller.domain(for: site) ?? site.name) stops resolving to it. The folder on disk is not touched."
         alert.addButton(withTitle: "Delete").hasDestructiveAction = true
         alert.addButton(withTitle: "Cancel")
         NSApp.activate(ignoringOtherApps: true)

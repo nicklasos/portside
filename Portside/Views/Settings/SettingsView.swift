@@ -59,9 +59,37 @@ private struct NetworkSettings: View {
     @State private var proxyPort = ""
     @State private var dnsPort = ""
     @State private var isApplying = false
+    @State private var domainDraft = DomainSuffixDraft(.localhost)
+    @State private var isChangingDomain = false
+
+    private var suffix: DomainSuffix { controller.settings.domainSuffix }
 
     var body: some View {
         Form {
+            Section("Domain") {
+                DomainSuffixPicker(draft: $domainDraft)
+                HStack {
+                    if let notice = controller.domainNotice {
+                        Label(notice, systemImage: "info.circle")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button("Use \(domainDraft.suffix?.display ?? "Suffix")", action: applyDomain)
+                        .disabled(domainDraft.suffix == nil || domainDraft.suffix == suffix || isChangingDomain)
+                }
+                ForEach(controller.staleResolvers, id: \.self) { stale in
+                    let file = ResolverInstaller.resolverFile(for: stale).path
+                    HStack {
+                        Text("Portside's \(file) is no longer used.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Remove \(file)…") { controller.removeResolver(for: stale) }
+                            .disabled(controller.isInstallingResolver)
+                    }
+                }
+            }
             Section {
                 LabeledContent("Proxy port") {
                     HStack {
@@ -81,33 +109,45 @@ private struct NetworkSettings: View {
                         .disabled(!hasChanges || parsed == nil || isApplying)
                 }
             } footer: {
-                Text("Port 80 gives plain `http://site.test` URLs. Any other port appears in every URL, such as `site.test:8080`.")
+                Text("Port 80 gives plain `http://site\(suffix.display)` URLs. Any other port appears in every URL, such as `site\(suffix.display):8080`.")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
             Section("Resolver") {
-                LabeledContent("/etc/resolver/test") {
-                    Text(resolverLine).foregroundStyle(controller.resolverStatus == .installed ? Color.secondary : Color.orange)
+                LabeledContent(ResolverInstaller.resolverFile(for: suffix).path) {
+                    Text(resolverLine).foregroundStyle(controller.needsResolverSetup ? Color.orange : Color.secondary)
                 }
-                LabeledContent("Self-test") {
-                    HStack {
-                        Text(selfTestLine).foregroundStyle(.secondary)
-                        Button("Run") { Task { await controller.runResolverSelfTest() } }
-                            .controlSize(.small)
+                if controller.resolution == .portsideDNS {
+                    LabeledContent("Self-test") {
+                        HStack {
+                            Text(selfTestLine).foregroundStyle(.secondary)
+                            Button("Run") { Task { await controller.runResolverSelfTest() } }
+                                .controlSize(.small)
+                        }
                     }
-                }
-                HStack {
-                    Spacer()
-                    Button(controller.resolverStatus == .installed ? "Details…" : "Repair…") {
-                        controller.refreshResolverStatus()
-                        controller.show(.resolverSetup)
+                    HStack {
+                        Spacer()
+                        Button(controller.resolverStatus == .installed ? "Details…" : "Repair…") {
+                            controller.refreshResolverStatus()
+                            controller.show(.resolverSetup)
+                        }
                     }
                 }
             }
         }
         .formStyle(.grouped)
-        .frame(height: 380)
+        .frame(height: 640)
         .onAppear(perform: load)
+    }
+
+    private func applyDomain() {
+        guard let chosen = domainDraft.suffix else { return }
+        isChangingDomain = true
+        Task {
+            await controller.chooseDomainSuffix(chosen)
+            isChangingDomain = false
+            if controller.needsResolverSetup { controller.show(.resolverSetup) }
+        }
     }
 
     private func portField(_ text: Binding<String>) -> some View {
@@ -120,6 +160,7 @@ private struct NetworkSettings: View {
     private func load() {
         proxyPort = String(controller.settings.proxyPort)
         dnsPort = String(controller.settings.dnsPort)
+        domainDraft = DomainSuffixDraft(suffix)
         controller.refreshResolverStatus()
     }
 
@@ -153,18 +194,20 @@ private struct NetworkSettings: View {
 
     private var dnsStatus: String {
         switch controller.dnsState {
-        case .running: "Answering *.test"
-        case .stopped: "Stopped"
+        case .running: "Answering *\(suffix.display)"
+        case .stopped: controller.resolution == .system ? "Not needed for \(suffix.display)" : "Stopped"
         case .portInUse: "In use by another app"
         case .failed(let reason): reason
         }
     }
 
     private var resolverLine: String {
-        switch controller.resolverStatus {
-        case .installed: "Installed, points to Portside"
-        case .missing: "Not installed"
-        case .mismatched: "Points elsewhere (another tool?)"
+        switch (controller.resolution, controller.resolverStatus) {
+        case (nil, _): "Checking…"
+        case (.system?, _): "Built in, no setup needed"
+        case (.portsideDNS?, .installed): "Installed, points to Portside"
+        case (.portsideDNS?, .missing): "Not installed"
+        case (.portsideDNS?, .mismatched): "Points elsewhere (another tool?)"
         }
     }
 
@@ -227,7 +270,7 @@ private struct AdvancedSettings: View {
     private func confirmReset() {
         let alert = NSAlert()
         alert.messageText = "Reset Portside settings?"
-        alert.informativeText = "Ports and preferences go back to their defaults. Your sites are kept."
+        alert.informativeText = "Ports and preferences go back to their defaults. Your sites and domain are kept."
         alert.addButton(withTitle: "Reset").hasDestructiveAction = true
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
