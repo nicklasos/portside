@@ -173,6 +173,8 @@ When a leader exits on its own, `ManagedProcess` reaps it and then terminates th
 
 `ManagedProcess` reads both pipes on its own serial queue and appends raw bytes to the process's `LogBuffer`. The buffer splits on `\n`, treats `\r\n` as one newline, keeps ANSI escapes for the log view to render, and holds a partial line until its newline arrives. A partial line that grows past 64 KiB becomes a line by itself. Past 10,000 lines, the oldest lines are dropped and counted. Portside adds its own lines, such as `▶ make dev (pid 4242)`, to the same buffer. With log mirroring on, every line is also appended to `~/Library/Logs/Portside/<site>/<label>.log`.
 
+The logs window renders only the newest 1,000 lines of a buffer. `LogWindow` picks them by absolute line number and tells `LogTextView` what to remove at the top, prepend, or append, so new output never re-renders the lines already shown. A bar above the text says how many lines are shown, loads 1,000 earlier lines per click up to the whole buffer, and counts the lines the buffer dropped. Search covers the shown lines. **Copy All** copies the whole buffer. `LogViewState` holds the shown limit and Follow, which is off by default. The pane opens at the newest line once its scroll view has a size. Follow pins the view there, and scrolling away turns it off. With Follow off, lines added or trimmed above the visible ones do not move them.
+
 ## Crash safety
 
 Portside expects to be force-quit or to crash, and cleans up on the next launch.

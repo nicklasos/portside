@@ -20,6 +20,7 @@
 		3B3DD65AD1E8083ADE7CC33B /* SiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CD73E937BA9AFD7C9FF00D /* SiteStore.swift */; };
 		3CCACB1C97D0123DE0A54FE4 /* PortsideControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E85D59499ADE758CD5C70BF4 /* PortsideControllerTests.swift */; };
 		47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3345620368D6CD91E90311C1 /* AppSettings.swift */; };
+		510D385CB6295D067DEBA2D0 /* LogWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B04A595357B40829A6EF147 /* LogWindow.swift */; };
 		515F4341AF8F73B93033F264 /* SuffixCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528953F20C84B2F6EE055630 /* SuffixCheckTests.swift */; };
 		53C810A69591CEF859E8C847 /* caddy-blog.json in Resources */ = {isa = PBXBuildFile; fileRef = 955EDE762406E3E2C699A450 /* caddy-blog.json */; };
 		53EA663864055AB67FD78163 /* ProcessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21175A98E65DE30E0F070E2 /* ProcessManager.swift */; };
@@ -63,6 +64,7 @@
 		DF6BF6A7734522F2348B08CE /* DNSServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70CC3FF49FBCC1E9FFBB0929 /* DNSServer.swift */; };
 		DFD90D7DB8ADC8AAA07BA68F /* ANSIParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B062112C573C758934A8D13C /* ANSIParserTests.swift */; };
 		E1091483F80FEACBA38CE70A /* SiteValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3371F8479F06873CE6C9225 /* SiteValidation.swift */; };
+		E17D42B0B9BB773D5F04C3D5 /* LogWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363BAA2E97D521D4A4C43E9E /* LogWindowTests.swift */; };
 		E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB013570A77DEFBE17D837C2 /* Site.swift */; };
 		EA6E4F332C7D85D0203316E0 /* FolderAutofill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F4A7E868EE2795961567699 /* FolderAutofill.swift */; };
 		EA98E2F65895F55F4C9B0F16 /* LogsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B466E3DDB27C5CE169E06D9 /* LogsWindow.swift */; };
@@ -97,11 +99,13 @@
 		190DAA0353D86872275C2476 /* Portside.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Portside.entitlements; sourceTree = "<group>"; };
 		1F20E44E4E00039E06218385 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1FFFE619613302A6BE7C2CC9 /* LogTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTextView.swift; sourceTree = "<group>"; };
+		2B04A595357B40829A6EF147 /* LogWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWindow.swift; sourceTree = "<group>"; };
 		2B3DE47F84AFEB286BC1EC6B /* caddy-blog-localhost.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-blog-localhost.json"; sourceTree = "<group>"; };
 		2BDB27019664BB31F509D511 /* SiteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteEditorView.swift; sourceTree = "<group>"; };
 		2FA92A86C2BC35736B26C8BF /* ResolverSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverSetupView.swift; sourceTree = "<group>"; };
 		3345620368D6CD91E90311C1 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		358765601C52A57AD9732FCE /* EnvPortDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvPortDetector.swift; sourceTree = "<group>"; };
+		363BAA2E97D521D4A4C43E9E /* LogWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWindowTests.swift; sourceTree = "<group>"; };
 		365678D7E43493546B0296BE /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		3715245E27D23C61B1B4A557 /* ProcessEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessEditorView.swift; sourceTree = "<group>"; };
 		37BA43B38D3CC3FAA9B4F727 /* PortChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortChecker.swift; sourceTree = "<group>"; };
@@ -290,6 +294,7 @@
 				04E6D44372EB5C37A88DDB58 /* ANSIParser.swift */,
 				0B466E3DDB27C5CE169E06D9 /* LogsWindow.swift */,
 				1FFFE619613302A6BE7C2CC9 /* LogTextView.swift */,
+				2B04A595357B40829A6EF147 /* LogWindow.swift */,
 			);
 			path = Logs;
 			sourceTree = "<group>";
@@ -336,6 +341,7 @@
 				A2A1FEFE7EEA65CAFCA60A38 /* DomainSuffixTests.swift */,
 				5368BA37278BFC07CACABE67 /* EnvPortDetectorTests.swift */,
 				F21FB895D295432BCCC2127D /* LogBufferTests.swift */,
+				363BAA2E97D521D4A4C43E9E /* LogWindowTests.swift */,
 				E85D59499ADE758CD5C70BF4 /* PortsideControllerTests.swift */,
 				3911AE3EB1EF738961CCA63E /* ProcessManagerTests.swift */,
 				B75ED958BAF6F739693E706A /* SiteStoreTests.swift */,
@@ -500,6 +506,7 @@
 				BD696FC1908EA6D273128BC1 /* FolderPicker.swift in Sources */,
 				F98FD6DBC7334F595CDAA4F0 /* LogBuffer.swift in Sources */,
 				1F8A7DE00CCCC386B35BBD52 /* LogTextView.swift in Sources */,
+				510D385CB6295D067DEBA2D0 /* LogWindow.swift in Sources */,
 				EA98E2F65895F55F4C9B0F16 /* LogsWindow.swift in Sources */,
 				59EEC7E1846A6C46FD7C651A /* ManagedProcess.swift in Sources */,
 				BA890D7D61347347F097EFCD /* MenuBarIcon.swift in Sources */,
@@ -540,6 +547,7 @@
 				9E24FBD16D62EE23EB911916 /* DomainSuffixTests.swift in Sources */,
 				CA3B7E7A28B71438C9011979 /* EnvPortDetectorTests.swift in Sources */,
 				2DA85BC5843F015E271969A9 /* LogBufferTests.swift in Sources */,
+				E17D42B0B9BB773D5F04C3D5 /* LogWindowTests.swift in Sources */,
 				3CCACB1C97D0123DE0A54FE4 /* PortsideControllerTests.swift in Sources */,
 				868804C8E272D68B9B15EA00 /* ProcessManagerTests.swift in Sources */,
 				689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */,

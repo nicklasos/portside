@@ -64,7 +64,7 @@ private struct LogPane: View {
     let site: Site
     let process: ProcessConfig
     @Environment(PortsideController.self) private var controller
-    @State private var follow = true
+    @State private var view = LogViewState()
     @State private var query = ""
     @State private var matchCount = 0
     @State private var findNextToken = 0
@@ -82,18 +82,14 @@ private struct LogPane: View {
         let buffer = buffer
         let snapshot = buffer.snapshot()
         let _ = buffer.revision
+        let window = LogWindow(snapshot: snapshot, limit: view.shownLimit)
         VStack(spacing: 0) {
             toolbar(lineCount: snapshot.lines.count)
             Divider()
-            if snapshot.dropped > 0 {
-                Text("… \(snapshot.dropped.formatted()) older lines dropped")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 3)
-                    .background(Color(nsColor: LogTextView.background))
+            if window.hidden > 0 || window.dropped > 0 {
+                notShownBar(window, bufferCount: snapshot.lines.count)
             }
-            LogTextView(buffer: buffer, follow: $follow, query: query, findNextToken: findNextToken) { matchCount = $0 }
+            LogTextView(buffer: buffer, state: $view, query: query, findNextToken: findNextToken) { matchCount = $0 }
         }
         .onAppear {
             guard isStaticMain, accessLog == nil else { return }
@@ -102,6 +98,40 @@ private struct LogPane: View {
             accessLog = tail
         }
         .onDisappear { accessLog?.stop() }
+        #if DEBUG
+        .onReceive(NotificationCenter.default.publisher(for: DebugLaunch.logsAction)) { note in
+            switch note.object as? String {
+            case "follow": view.follow.toggle()
+            case "earlier": view.showEarlier(than: window)
+            case "clear": clear()
+            default: break
+            }
+        }
+        #endif
+    }
+
+    /// The one place that says which lines the view is not showing and why.
+    private func notShownBar(_ window: LogWindow, bufferCount: Int) -> some View {
+        HStack(spacing: 6) {
+            if window.hidden > 0 {
+                Text("\(window.lines.count.formatted()) of \(bufferCount.formatted()) lines shown")
+                Text("·")
+                Button("Show \(window.nextChunk.formatted()) earlier") { view.showEarlier(than: window) }
+                    .buttonStyle(.link)
+                    .foregroundStyle(Color(nsColor: .linkColor))
+            }
+            if window.hidden > 0, window.dropped > 0 {
+                Text("·")
+            }
+            if window.dropped > 0 {
+                Text("\(window.dropped.formatted()) older lines dropped")
+            }
+        }
+        .font(.system(size: 11))
+        .foregroundStyle(Color(white: 0.62))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
+        .background(Color(nsColor: LogTextView.background))
     }
 
     private func toolbar(lineCount: Int) -> some View {
@@ -132,13 +162,13 @@ private struct LogPane: View {
             Spacer(minLength: 8)
 
             searchField
-            Toggle(isOn: $follow) {
+            Toggle(isOn: $view.follow) {
                 Label("Follow", systemImage: "arrow.down.to.line")
             }
             .toggleStyle(.button)
             .controlSize(.small)
             .help("Keep scrolling to the newest line")
-            Button("Clear") { buffer.clear() }
+            Button("Clear", action: clear)
                 .controlSize(.small)
             Button("Copy All", action: copyAll)
                 .controlSize(.small)
@@ -156,7 +186,7 @@ private struct LogPane: View {
 
     private var searchField: some View {
         HStack(spacing: 4) {
-            TextField("Search", text: $query)
+            TextField("Search shown lines", text: $query)
                 .textFieldStyle(.roundedBorder)
                 .controlSize(.small)
                 .frame(width: 150)
@@ -176,6 +206,11 @@ private struct LogPane: View {
     }
 
     private var name: String { process.label.isEmpty ? process.command : process.label }
+
+    private func clear() {
+        buffer.clear()
+        view.clear()
+    }
 
     private func copyAll() {
         let text = buffer.snapshot().lines.map { ANSIParser.runs($0).map(\.text).joined() }.joined(separator: "\n")

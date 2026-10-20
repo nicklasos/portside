@@ -8,8 +8,12 @@ import SwiftUI
 /// needs no screen-recording permission, and writes the menu bar glyph variants next to it.
 /// `-PortsideSnapshotDelay <seconds>` waits longer than the default 5, for checks that take time.
 /// `-PortsideEditorFolder <path>` makes a new-site editor pick that folder as **Choose…** would.
+/// `-PortsideLogsActions follow,earlier,clear,scrollup,snap` presses those logs-window controls one
+/// per second from `-PortsideLogsActionsDelay <seconds>` (default 3); `snap` writes `<snapshot>-<step>.png`.
+/// `-PortsideLogViewTrace YES` logs the line count of the log view's text storage after every change.
 @MainActor
 enum DebugLaunch {
+    static let logsAction = Notification.Name("PortsideDebugLogsAction")
     private static var done = false
 
     static func openRequestedWindow(_ controller: PortsideController) {
@@ -27,6 +31,19 @@ enum DebugLaunch {
             case "popover": clickStatusItem()
             case "popover-window": showPopoverContentInWindow(controller)
             default: NSLog("Portside: unknown PortsideOpenWindow \(request)")
+            }
+        }
+        if let actions = UserDefaults.standard.string(forKey: "PortsideLogsActions") {
+            let start = UserDefaults.standard.double(forKey: "PortsideLogsActionsDelay")
+            for (i, action) in actions.split(separator: ",").enumerated() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + (start > 0 ? start : 3) + Double(i)) {
+                    NSLog("Portside: logs action \(action)")
+                    if action == "snap", let path = UserDefaults.standard.string(forKey: "PortsideSnapshot") {
+                        snapshotFrontWindow(to: URL(fileURLWithPath: (path as NSString).deletingPathExtension + "-\(i).png"))
+                    } else {
+                        NotificationCenter.default.post(name: logsAction, object: String(action))
+                    }
+                }
             }
         }
         if let path = UserDefaults.standard.string(forKey: "PortsideSnapshot") {
