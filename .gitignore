@@ -10,3 +10,4 @@ Portside/Resources/Licenses/
 dist/
 .audit/
 *.iconset/
+.claude/
