@@ -11,14 +11,27 @@ struct DomainSuffix: Hashable, Codable {
 
     static let localhost = DomainSuffix(label: "localhost")
     static let test = DomainSuffix(label: "test")
-    static let presets: [DomainSuffix] = [.localhost, .test]
+    static let loc = DomainSuffix(label: "loc")
+    static let local = DomainSuffix(label: "local")
+    static let presets: [DomainSuffix] = [.localhost, .test, .loc, .local]
 
     var display: String { ".\(label)" }
     var isPreset: Bool { Self.presets.contains(self) }
 
-    /// A short note for suffixes that work but are not reserved for local use.
-    var warning: String? {
-        Self.unreservedLocalNames.contains(label) ? "\(display) is not reserved. It may collide with names on your network." : nil
+    /// What the name itself means, before anything is probed.
+    var nameCheck: CheckLine {
+        switch label {
+        case "localhost":
+            CheckLine(.ok, "Reserved for this computer (RFC 6761)")
+        case "test":
+            CheckLine(.ok, "Reserved for testing (RFC 6761), never a public TLD")
+        case "local":
+            CheckLine(.warning, "Not recommended. macOS uses .local for Bonjour (AirDrop, printers, YourMac.local), so lookups go over multicast and can be slow or collide")
+        case _ where Self.unreservedLocalNames.contains(label):
+            CheckLine(.warning, "Not reserved. It may collide with names on your network")
+        default:
+            CheckLine(.ok, "Valid name, not a public TLD")
+        }
     }
 
     /// Validates a typed suffix. A leading dot and uppercase letters are accepted.
@@ -34,9 +47,6 @@ struct DomainSuffix: Hashable, Codable {
         }
         // A numeric last label makes browsers parse the host as an IPv4 address.
         if label.allSatisfy(\.isNumber) { return .failure(.init(reason: "A suffix cannot be only digits")) }
-        if label == "local" {
-            return .failure(.init(reason: ".local belongs to Bonjour (mDNS). Lookups would go to the network"))
-        }
         if hstsPreloaded.contains(label) {
             return .failure(.init(reason: ".\(label) is a real TLD that forces HTTPS in browsers"))
         }

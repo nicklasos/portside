@@ -113,18 +113,12 @@ private struct NetworkSettings: View {
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
-            Section("Resolver") {
+            Section("Resolution") {
                 LabeledContent(ResolverInstaller.resolverFile(for: suffix).path) {
                     Text(resolverLine).foregroundStyle(controller.needsResolverSetup ? Color.orange : Color.secondary)
                 }
+                EndToEndRow()
                 if controller.resolution == .portsideDNS {
-                    LabeledContent("Self-test") {
-                        HStack {
-                            Text(selfTestLine).foregroundStyle(.secondary)
-                            Button("Run") { Task { await controller.runResolverSelfTest() } }
-                                .controlSize(.small)
-                        }
-                    }
                     HStack {
                         Spacer()
                         Button(controller.resolverStatus == .installed ? "Details…" : "Repair…") {
@@ -208,14 +202,6 @@ private struct NetworkSettings: View {
         case (.portsideDNS?, .installed): "Installed, points to Portside"
         case (.portsideDNS?, .missing): "Not installed"
         case (.portsideDNS?, .mismatched): "Points elsewhere (another tool?)"
-        }
-    }
-
-    private var selfTestLine: String {
-        switch controller.resolverSelfTest {
-        case true?: "Responding"
-        case false?: "Not resolving through Portside"
-        case nil: "Not run"
         }
     }
 }

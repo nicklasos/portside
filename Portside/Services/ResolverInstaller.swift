@@ -17,6 +17,8 @@ enum ResolverInstaller {
         directory.appendingPathComponent(suffix.label)
     }
 
+    /// Portside's DNS server answers this name with `DNSServer.selfTestAddress`, and the proxy
+    /// answers it with `EndToEndCheck.marker`.
     static func selfTestHost(zone: String) -> String {
         "portside-selftest.\(zone)"
     }
@@ -57,12 +59,6 @@ enum ResolverInstaller {
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "\"", with: "\\\"")
         return "do shell script \"\(escaped)\" with administrator privileges"
-    }
-
-    /// True when the system resolver sends `portside-selftest.<suffix>` to Portside's own DNS server,
-    /// which alone answers it with `DNSServer.selfTestAddress`.
-    static func selfTest(suffix: DomainSuffix) async -> Bool {
-        await SystemResolver.addresses(of: selfTestHost(zone: suffix.label)).contains(DNSServer.selfTestAddress)
     }
 
     private static let flushCaches = "(dscacheutil -flushcache; killall -HUP mDNSResponder; true)"

@@ -33,8 +33,7 @@ final class CaddyConfigBuilderTests: XCTestCase {
     }
 
     func testCustomSuffixRoutesStaticSiteAndItsAccessLog() throws {
-        let loc = try DomainSuffix.custom("loc").get()
-        let routes = CaddyConfigBuilder.hostRoutes(sites: [smartcity, docs], suffix: loc, enabledStaticSites: [docs.id], logging: false)
+        let routes = CaddyConfigBuilder.hostRoutes(sites: [smartcity, docs], suffix: .loc, enabledStaticSites: [docs.id], logging: false)
         XCTAssertEqual(routes.map(\.host), ["api.smartcity.loc", "docs.loc", "smartcity.loc"])
     }
 

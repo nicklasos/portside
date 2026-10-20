@@ -23,7 +23,7 @@ enum CaddyConfigBuilder {
         var server: [String: Any] = [
             "listen": [":\(proxyPort)"],
             "automatic_https": ["disable": true],
-            "routes": routes.map(render) + [fallbackRoute],
+            "routes": [selfTestRoute(suffix)] + routes.map(render) + [fallbackRoute],
         ]
         if !proxiedHosts.isEmpty {
             server["errors"] = ["routes": [[
@@ -115,6 +115,19 @@ enum CaddyConfigBuilder {
             handler = htmlResponse(status: 503, body: Pages.notRunning)
         }
         return ["match": [["host": [route.host]]], "handle": [handler], "terminal": true]
+    }
+
+    private static func selfTestRoute(_ suffix: DomainSuffix) -> [String: Any] {
+        [
+            "match": [["host": [ResolverInstaller.selfTestHost(zone: suffix.label)]]],
+            "handle": [[
+                "handler": "static_response",
+                "status_code": 200,
+                "headers": ["Content-Type": ["text/plain; charset=utf-8"], "Cache-Control": ["no-store"]],
+                "body": EndToEndCheck.marker,
+            ]],
+            "terminal": true,
+        ]
     }
 
     private static var fallbackRoute: [String: Any] {

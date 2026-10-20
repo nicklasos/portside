@@ -49,6 +49,31 @@
             {
               "handle" : [
                 {
+                  "body" : "portside-ok",
+                  "handler" : "static_response",
+                  "headers" : {
+                    "Cache-Control" : [
+                      "no-store"
+                    ],
+                    "Content-Type" : [
+                      "text/plain; charset=utf-8"
+                    ]
+                  },
+                  "status_code" : 200
+                }
+              ],
+              "match" : [
+                {
+                  "host" : [
+                    "portside-selftest.localhost"
+                  ]
+                }
+              ],
+              "terminal" : true
+            },
+            {
+              "handle" : [
+                {
                   "flush_interval" : -1,
                   "handler" : "reverse_proxy",
                   "headers" : {

@@ -38,13 +38,13 @@ final class PortsideController {
         var logsDirectory: URL
         /// Where resolver files are read from. Writes always go to `/etc/resolver` through the admin prompt.
         var resolverDirectory: URL
-        var detectResolution: @Sendable (DomainSuffix) async -> ResolutionStrategy
+        var probes: SuffixProbes
         /// False for the unit-test host: no servers at launch, no notifications, no updater.
         var isLive: Bool
 
         static let live = Configuration(
             defaults: .standard, supportDirectory: AppPaths.supportDirectory, logsDirectory: AppPaths.logsDirectory,
-            resolverDirectory: ResolverInstaller.directory, detectResolution: { await ResolutionStrategy.detect($0) }, isLive: true
+            resolverDirectory: ResolverInstaller.directory, probes: .live, isLive: true
         )
 
         static func isolated(in directory: URL) -> Configuration {
@@ -53,7 +53,7 @@ final class PortsideController {
                 supportDirectory: directory.appendingPathComponent("support", isDirectory: true),
                 logsDirectory: directory.appendingPathComponent("logs", isDirectory: true),
                 resolverDirectory: directory.appendingPathComponent("resolver", isDirectory: true),
-                detectResolution: { _ in .system },
+                probes: SuffixProbes(lookup: { _ in [[127, 0, 0, 1]] }, fetch: { _, _ in .unreachable("Not live") }),
                 isLive: false
             )
         }
@@ -81,8 +81,9 @@ final class PortsideController {
     private(set) var staleResolvers: [DomainSuffix] = []
     /// Set after a suffix change while processes run with the old `PORTSIDE_URL`.
     private(set) var domainNotice: String?
-    /// nil until the self-test has run.
-    private(set) var resolverSelfTest: Bool?
+    /// nil until the end-to-end check has run for the current suffix.
+    private(set) var endToEnd: CheckLine?
+    private(set) var isCheckingEndToEnd = false
     private(set) var resolverError: String?
     private(set) var isInstallingResolver = false
 
@@ -155,14 +156,14 @@ final class PortsideController {
         notifier.activate()
         if !settings.hasChosenDomainSuffix { show(.onboarding) }
         Task {
+            async let proxyStarted: Void = proxy.start(sites: store.sites, enabledStaticSites: processes.enabledStaticSites)
             await refreshResolution()
             if settings.hasChosenDomainSuffix, shouldPromptForResolver { show(.resolverSetup) }
-        }
-        Task {
-            await proxy.start(sites: store.sites, enabledStaticSites: processes.enabledStaticSites)
+            await proxyStarted
             for site in store.sites where site.autoStart {
                 await start(site)
             }
+            await runEndToEndCheck()
         }
     }
 
@@ -300,6 +301,7 @@ final class PortsideController {
     func restartProxy() async {
         await proxy.stop()
         await proxy.start(sites: store.sites, enabledStaticSites: processes.enabledStaticSites)
+        endToEnd = nil
     }
 
     /// Applies edited ports, restarting only the servers whose port changed.
@@ -336,7 +338,8 @@ final class PortsideController {
     func refreshResolution() async {
         let suffix = settings.domainSuffix
         resolution = nil
-        let strategy = await configuration.detectResolution(suffix)
+        endToEnd = nil
+        let strategy = await usability(of: suffix).strategy
         guard suffix == settings.domainSuffix else { return }
         resolution = strategy
         switch strategy {
@@ -344,11 +347,21 @@ final class PortsideController {
         case .portsideDNS: startDNS(zone: suffix.label)
         }
         refreshResolverStatus()
-        if strategy == .portsideDNS { await runResolverSelfTest() } else { resolverSelfTest = nil }
     }
 
-    func detectResolution(for suffix: DomainSuffix) async -> ResolutionStrategy {
-        await configuration.detectResolution(suffix)
+    func usability(of suffix: DomainSuffix) async -> SuffixUsability {
+        await SuffixUsability.evaluate(suffix, resolverContents: resolverContents(for: suffix), dnsPort: settings.dnsPort, lookup: configuration.probes.lookup)
+    }
+
+    /// Resolves the self-test name and fetches it through the proxy, as a browser would.
+    func runEndToEndCheck() async {
+        guard let resolution else { return }
+        isCheckingEndToEnd = true
+        defer { isCheckingEndToEnd = false }
+        endToEnd = await EndToEndCheck.run(
+            suffix: settings.domainSuffix, strategy: resolution, proxyPort: settings.proxyPort,
+            proxyState: proxy.state, probes: configuration.probes
+        )
     }
 
     func resolverStatus(for suffix: DomainSuffix) -> ResolverStatus {
@@ -358,7 +371,7 @@ final class PortsideController {
     /// The only caller of `ResolverInstaller.install`, reached from an explicit button.
     func installResolver() {
         runAdminAction { try ResolverInstaller.install(suffix: settings.domainSuffix, dnsPort: settings.dnsPort) }
-        Task { await runResolverSelfTest() }
+        Task { await runEndToEndCheck() }
     }
 
     /// The only caller of `ResolverInstaller.uninstall`, offered only for Portside's own stale files.
@@ -378,10 +391,6 @@ final class PortsideController {
         resolverStatus = ResolverInstaller.status(contents: resolverContents, dnsPort: settings.dnsPort)
         let labels = (try? FileManager.default.contentsOfDirectory(atPath: configuration.resolverDirectory.path)) ?? []
         staleResolvers = labels.sorted().compactMap(DomainSuffix.stored).filter { $0 != current && resolverStatus(for: $0) == .installed }
-    }
-
-    func runResolverSelfTest() async {
-        resolverSelfTest = await ResolverInstaller.selfTest(suffix: settings.domainSuffix)
     }
 
     var shouldPromptForResolver: Bool {

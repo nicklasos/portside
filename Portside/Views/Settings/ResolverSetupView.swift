@@ -46,7 +46,7 @@ struct ResolverSetupView: View {
         switch controller.resolverStatus {
         case .installed:
             Text("macOS sends every `\(suffix.display)` lookup to Portside on 127.0.0.1:\(port).")
-            selfTestLine
+            EndToEndRow()
         case .missing:
             Text("Portside answers `*\(suffix.display)` names itself, on 127.0.0.1:\(port). For macOS to ask it, Portside writes one small file, `\(file)`:")
             codeBlock(ResolverInstaller.expectedContents(dnsPort: port))
@@ -80,15 +80,6 @@ struct ResolverSetupView: View {
             .keyboardShortcut(.cancelAction)
             Button("Use Portside for \(suffix.display)") { controller.installResolver() }
                 .disabled(controller.isInstallingResolver)
-        }
-    }
-
-    @ViewBuilder
-    private var selfTestLine: some View {
-        switch controller.resolverSelfTest {
-        case true?: Label("Responding: \(ResolverInstaller.selfTestHost(zone: suffix.label)) resolves through Portside", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-        case false?: Label("Not responding yet. Try again in a few seconds, or Repair from Settings.", systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-        case nil: Label("Checking…", systemImage: "clock").foregroundStyle(.secondary)
         }
     }
 

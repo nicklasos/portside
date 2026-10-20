@@ -34,6 +34,8 @@ enum SiteValidation {
             out.append(.init(field: .name, message: "Name is required"))
         } else if !isValidLabel(site.name) {
             out.append(.init(field: .name, message: "Use lowercase letters, digits and dashes"))
+        } else if site.name == "portside-selftest" {
+            out.append(.init(field: .name, message: "This name is reserved for Portside's self-test"))
         } else if all.contains(where: { $0.id != site.id && $0.name == site.name }) {
             out.append(.init(field: .name, message: "Another site is already named \(site.name)"))
         }
