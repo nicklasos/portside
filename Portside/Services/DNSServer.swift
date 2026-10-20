@@ -68,6 +68,10 @@ final class DNSServer {
         RecordType.aaaa: [UInt8](repeating: 0, count: 15) + [1],
     ]
 
+    /// Still loopback, but no other `.test` resolver (Herd, Valet, dnsmasq) answers with it,
+    /// so the self-test can tell Portside's resolver apart from theirs.
+    static let selfTestAddress: [UInt8] = [127, 0, 0, 53]
+
     /// Builds the reply for one raw DNS query, or `nil` when the packet should be dropped.
     static func response(to query: [UInt8]) -> [UInt8]? {
         guard query.count >= 12 else { return nil }
@@ -77,7 +81,7 @@ final class DNSServer {
         guard !isResponse, opcode == 0, u16(query, 4) == 1 else { return nil }
 
         var offset = 12
-        var lastLabel: [UInt8] = []
+        var labels: [String] = []
         while true {
             guard offset < query.count else { return nil }
             let length = Int(query[offset])
@@ -85,7 +89,7 @@ final class DNSServer {
             if length == 0 { break }
             // Lengths above 63 are compression pointers or reserved; neither is valid in a question.
             guard length <= 63, offset + length <= query.count else { return nil }
-            lastLabel = Array(query[offset..<offset + length])
+            labels.append(String(decoding: query[offset..<offset + length], as: UTF8.self).lowercased())
             offset += length
         }
         guard offset - 12 <= 255, offset + 4 <= query.count else { return nil }
@@ -93,7 +97,8 @@ final class DNSServer {
         let qclass = u16(query, offset + 2)
         let question = query[12..<offset + 4]
 
-        let inZone = String(decoding: lastLabel, as: UTF8.self).lowercased() == "test"
+        let inZone = labels.last == "test"
+        let isSelfTest = labels.joined(separator: ".") == ResolverInstaller.selfTestHost
         var answerTypes: [UInt16] = []
         if inZone, qclass == RecordClass.internet || qclass == RecordClass.any {
             answerTypes = qtype == RecordType.any ? [RecordType.a, RecordType.aaaa] : [qtype].filter { loopback[$0] != nil }
@@ -109,7 +114,7 @@ final class DNSServer {
         out += be(1) + be(UInt16(answerTypes.count)) + be(0) + be(0)
         out += question
         for type in answerTypes {
-            let rdata = loopback[type]!
+            let rdata = isSelfTest && type == RecordType.a ? selfTestAddress : loopback[type]!
             out += [0xC0, 0x0C]
             out += be(type) + be(RecordClass.internet)
             out += be(UInt16(ttl >> 16)) + be(UInt16(ttl & 0xFFFF))

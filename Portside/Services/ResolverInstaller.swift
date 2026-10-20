@@ -55,40 +55,31 @@ enum ResolverInstaller {
         return "do shell script \"\(escaped)\" with administrator privileges"
     }
 
-    /// True when the system resolver maps `portside-selftest.test` to loopback.
-    /// Any `.test` resolver that answers loopback passes, not only Portside's.
+    /// True when the system resolver sends `portside-selftest.test` to Portside's own DNS server,
+    /// which alone answers it with `DNSServer.selfTestAddress`.
     static func selfTest() async -> Bool {
-        await Task.detached { resolvesToLoopback(selfTestHost) }.value
+        await Task.detached { resolvesToPortside(selfTestHost) }.value
     }
 
-    private static func resolvesToLoopback(_ host: String) -> Bool {
+    private static func resolvesToPortside(_ host: String) -> Bool {
         var hints = addrinfo()
-        hints.ai_family = AF_UNSPEC
+        hints.ai_family = AF_INET
         hints.ai_socktype = SOCK_STREAM
         var result: UnsafeMutablePointer<addrinfo>?
         guard getaddrinfo(host, nil, &hints, &result) == 0, let first = result else { return false }
         defer { freeaddrinfo(first) }
         var cursor: UnsafeMutablePointer<addrinfo>? = first
         while let info = cursor {
-            if let addr = info.pointee.ai_addr, isLoopback(addr) { return true }
+            if let addr = info.pointee.ai_addr, isSelfTestAddress(addr) { return true }
             cursor = info.pointee.ai_next
         }
         return false
     }
 
-    private static func isLoopback(_ addr: UnsafeMutablePointer<sockaddr>) -> Bool {
-        switch Int32(addr.pointee.sa_family) {
-        case AF_INET:
-            return addr.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
-                UInt32(bigEndian: $0.pointee.sin_addr.s_addr) == 0x7F00_0001
-            }
-        case AF_INET6:
-            return addr.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { pointer in
-                var address = pointer.pointee.sin6_addr
-                return withUnsafeBytes(of: &address) { $0.elementsEqual([UInt8](repeating: 0, count: 15) + [1]) }
-            }
-        default:
-            return false
+    private static func isSelfTestAddress(_ addr: UnsafeMutablePointer<sockaddr>) -> Bool {
+        guard Int32(addr.pointee.sa_family) == AF_INET else { return false }
+        return addr.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { pointer in
+            withUnsafeBytes(of: pointer.pointee.sin_addr.s_addr) { $0.elementsEqual(DNSServer.selfTestAddress) }
         }
     }
 

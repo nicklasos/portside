@@ -29,6 +29,12 @@ final class DNSServerTests: XCTestCase {
         XCTAssertEqual(DNSServer.response(to: q), header(answers: 1) + Array(q[12...]) + aRecord)
     }
 
+    func testSelfTestNameGetsPortsideOnlyAddress() {
+        let q = query("Portside-Selftest.test", .a)
+        let selfTestRecord = Array(aRecord.dropLast(4)) + [127, 0, 0, 53]
+        XCTAssertEqual(DNSServer.response(to: q), header(answers: 1) + Array(q[12...]) + selfTestRecord)
+    }
+
     func testAAAAQueryAnswersIPv6Loopback() {
         let q = query("api.smartcity.test", .aaaa)
         XCTAssertEqual(DNSServer.response(to: q), header(answers: 1) + Array(q[12...]) + aaaaRecord)
