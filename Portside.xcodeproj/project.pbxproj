@@ -8,19 +8,32 @@
 
 /* Begin PBXBuildFile section */
 		10DDE4F46672C65FD62C12FF /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365678D7E43493546B0296BE /* MenuBarView.swift */; };
+		2737FA2475F14F3CF1945D85 /* caddy-empty.json in Resources */ = {isa = PBXBuildFile; fileRef = 95E46562988127AD742D4515 /* caddy-empty.json */; };
 		3B3DD65AD1E8083ADE7CC33B /* SiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CD73E937BA9AFD7C9FF00D /* SiteStore.swift */; };
 		47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3345620368D6CD91E90311C1 /* AppSettings.swift */; };
 		5EB210EE6B5B8D8D42BA314C /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = A3BCBDF791C4278E30A0B91E /* NIOCore */; };
 		689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B75ED958BAF6F739693E706A /* SiteStoreTests.swift */; };
+		6A4F12E844DA8DBE2FE9F9CC /* ResolverInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8F2D38E93C20174A58FDA9 /* ResolverInstaller.swift */; };
+		700E3B06411E0BB6EDFBB5F4 /* ProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4876EF5F12CB582CF7334AB /* ProxyManager.swift */; };
+		725E316DDF0AB233B7CDEE12 /* caddy-static-enabled.json in Resources */ = {isa = PBXBuildFile; fileRef = 0E955A32D2B0FE5DF36D8FA9 /* caddy-static-enabled.json */; };
+		76CFF1943138921FC4B6AE16 /* CaddyConfigBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4ABCFAE5C2CB16BC98433B /* CaddyConfigBuilderTests.swift */; };
 		798DCC7E03E3800EF57F70E6 /* SiteStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9270A7646452D32DB6A624FC /* SiteStatus.swift */; };
 		89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A928D3FA53478440B6618289 /* Persistence.swift */; };
+		8BC98AF13555429397A3A33A /* PortChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BA43B38D3CC3FAA9B4F727 /* PortChecker.swift */; };
 		8EE0BF56870C58E33D7A6A75 /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = F9633B64B2ACF581E6B5A5A5 /* NIOPosix */; };
 		9A83B0E1E957DBA4D2A7E8CF /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = EDE65FD1F58D50D09639D599 /* Sparkle */; };
 		9BA732FE0EC57F64ECA64A59 /* AppPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD92124D73C1E797842E28D /* AppPaths.swift */; };
+		A9322FAF6AFAE29A4E8BB32C /* caddy-all-8080.json in Resources */ = {isa = PBXBuildFile; fileRef = CF3E75E21F471F440D47239D /* caddy-all-8080.json */; };
+		ADFB3CB8BBE8766C0505B358 /* caddy-preserve-host.json in Resources */ = {isa = PBXBuildFile; fileRef = AB7C1FBA86E85CFC2E9B1C19 /* caddy-preserve-host.json */; };
+		C67A3783DB88C70ABC93BDDB /* DNSServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */; };
 		C9EE1913639F22AC5CF9AD7A /* ProcessConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1333F982FEFDE2D075BE268A /* ProcessConfig.swift */; };
 		D080D58553B1481A8AC4CDBB /* PortsideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB83C883AAF22B2978122F84 /* PortsideApp.swift */; };
+		DA44017B1516EEE78272853A /* CaddyConfigBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DC4E96D4C4F692BC8768E5 /* CaddyConfigBuilder.swift */; };
+		DF6BF6A7734522F2348B08CE /* DNSServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70CC3FF49FBCC1E9FFBB0929 /* DNSServer.swift */; };
 		E1091483F80FEACBA38CE70A /* SiteValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3371F8479F06873CE6C9225 /* SiteValidation.swift */; };
 		E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB013570A77DEFBE17D837C2 /* Site.swift */; };
+		F6F7CF1672AB4EA42150AE23 /* caddy-smartcity.json in Resources */ = {isa = PBXBuildFile; fileRef = 2C87E74022493205867441CC /* caddy-smartcity.json */; };
+		F9031FD8A8FD0223B0CCD184 /* caddy-static-disabled.json in Resources */ = {isa = PBXBuildFile; fileRef = 7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,18 +48,31 @@
 
 /* Begin PBXFileReference section */
 		028DF3D1446FAD09B9FEE70D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0E8F2D38E93C20174A58FDA9 /* ResolverInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverInstaller.swift; sourceTree = "<group>"; };
+		0E955A32D2B0FE5DF36D8FA9 /* caddy-static-enabled.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-static-enabled.json"; sourceTree = "<group>"; };
 		0F1EA8021E3CC50C41F65084 /* PortsideTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PortsideTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1333F982FEFDE2D075BE268A /* ProcessConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessConfig.swift; sourceTree = "<group>"; };
 		190DAA0353D86872275C2476 /* Portside.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Portside.entitlements; sourceTree = "<group>"; };
+		2C87E74022493205867441CC /* caddy-smartcity.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-smartcity.json"; sourceTree = "<group>"; };
 		3345620368D6CD91E90311C1 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		365678D7E43493546B0296BE /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		37BA43B38D3CC3FAA9B4F727 /* PortChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortChecker.swift; sourceTree = "<group>"; };
+		48DC4E96D4C4F692BC8768E5 /* CaddyConfigBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaddyConfigBuilder.swift; sourceTree = "<group>"; };
 		693F1329B8E0E6246DD06F45 /* Portside.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portside.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		70CC3FF49FBCC1E9FFBB0929 /* DNSServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSServer.swift; sourceTree = "<group>"; };
+		7D4ABCFAE5C2CB16BC98433B /* CaddyConfigBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaddyConfigBuilderTests.swift; sourceTree = "<group>"; };
+		7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-static-disabled.json"; sourceTree = "<group>"; };
+		896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSServerTests.swift; sourceTree = "<group>"; };
 		8BD92124D73C1E797842E28D /* AppPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPaths.swift; sourceTree = "<group>"; };
 		9270A7646452D32DB6A624FC /* SiteStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStatus.swift; sourceTree = "<group>"; };
+		95E46562988127AD742D4515 /* caddy-empty.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-empty.json"; sourceTree = "<group>"; };
 		A2CD73E937BA9AFD7C9FF00D /* SiteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStore.swift; sourceTree = "<group>"; };
 		A3371F8479F06873CE6C9225 /* SiteValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteValidation.swift; sourceTree = "<group>"; };
 		A928D3FA53478440B6618289 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		AB7C1FBA86E85CFC2E9B1C19 /* caddy-preserve-host.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-preserve-host.json"; sourceTree = "<group>"; };
 		B75ED958BAF6F739693E706A /* SiteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStoreTests.swift; sourceTree = "<group>"; };
+		C4876EF5F12CB582CF7334AB /* ProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyManager.swift; sourceTree = "<group>"; };
+		CF3E75E21F471F440D47239D /* caddy-all-8080.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-all-8080.json"; sourceTree = "<group>"; };
 		DB013570A77DEFBE17D837C2 /* Site.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
 		EB83C883AAF22B2978122F84 /* PortsideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -102,6 +128,31 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		58A72CCF54F1F88789C29FBB /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				48DC4E96D4C4F692BC8768E5 /* CaddyConfigBuilder.swift */,
+				70CC3FF49FBCC1E9FFBB0929 /* DNSServer.swift */,
+				37BA43B38D3CC3FAA9B4F727 /* PortChecker.swift */,
+				C4876EF5F12CB582CF7334AB /* ProxyManager.swift */,
+				0E8F2D38E93C20174A58FDA9 /* ResolverInstaller.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		597766AE7BE328F7E51BAFD4 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				CF3E75E21F471F440D47239D /* caddy-all-8080.json */,
+				95E46562988127AD742D4515 /* caddy-empty.json */,
+				AB7C1FBA86E85CFC2E9B1C19 /* caddy-preserve-host.json */,
+				2C87E74022493205867441CC /* caddy-smartcity.json */,
+				7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */,
+				0E955A32D2B0FE5DF36D8FA9 /* caddy-static-enabled.json */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
 		7EBF685DE98E4D6955AD0B9D /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -136,16 +187,28 @@
 				190DAA0353D86872275C2476 /* Portside.entitlements */,
 				1F72B348FD8BE6DBF3198D82 /* App */,
 				9910EB765AA901D42AD8A8F3 /* Models */,
+				DF7701E57F9403C0B765D212 /* Resources */,
+				58A72CCF54F1F88789C29FBB /* Services */,
 				05A92E420E3917F7CBE0341A /* Store */,
 				7EBF685DE98E4D6955AD0B9D /* Views */,
 			);
 			path = Portside;
 			sourceTree = "<group>";
 		};
+		DF7701E57F9403C0B765D212 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		F3220EB177626A9B48443F47 /* PortsideTests */ = {
 			isa = PBXGroup;
 			children = (
+				7D4ABCFAE5C2CB16BC98433B /* CaddyConfigBuilderTests.swift */,
+				896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */,
 				B75ED958BAF6F739693E706A /* SiteStoreTests.swift */,
+				597766AE7BE328F7E51BAFD4 /* Fixtures */,
 			);
 			path = PortsideTests;
 			sourceTree = "<group>";
@@ -158,6 +221,7 @@
 			buildConfigurationList = AEDC7000644E59109F83997D /* Build configuration list for PBXNativeTarget "PortsideTests" */;
 			buildPhases = (
 				E570F55CF0B44932C5600F14 /* Sources */,
+				2C7606853E5071A1825C3BDB /* Resources */,
 			);
 			buildRules = (
 			);
@@ -236,6 +300,22 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		2C7606853E5071A1825C3BDB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A9322FAF6AFAE29A4E8BB32C /* caddy-all-8080.json in Resources */,
+				2737FA2475F14F3CF1945D85 /* caddy-empty.json in Resources */,
+				ADFB3CB8BBE8766C0505B358 /* caddy-preserve-host.json in Resources */,
+				F6F7CF1672AB4EA42150AE23 /* caddy-smartcity.json in Resources */,
+				F9031FD8A8FD0223B0CCD184 /* caddy-static-disabled.json in Resources */,
+				725E316DDF0AB233B7CDEE12 /* caddy-static-enabled.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXShellScriptBuildPhase section */
 		8A8CF4E4A60AE0E700A94F63 /* Embed Caddy */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -265,10 +345,15 @@
 			files = (
 				9BA732FE0EC57F64ECA64A59 /* AppPaths.swift in Sources */,
 				47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */,
+				DA44017B1516EEE78272853A /* CaddyConfigBuilder.swift in Sources */,
+				DF6BF6A7734522F2348B08CE /* DNSServer.swift in Sources */,
 				10DDE4F46672C65FD62C12FF /* MenuBarView.swift in Sources */,
 				89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */,
+				8BC98AF13555429397A3A33A /* PortChecker.swift in Sources */,
 				D080D58553B1481A8AC4CDBB /* PortsideApp.swift in Sources */,
 				C9EE1913639F22AC5CF9AD7A /* ProcessConfig.swift in Sources */,
+				700E3B06411E0BB6EDFBB5F4 /* ProxyManager.swift in Sources */,
+				6A4F12E844DA8DBE2FE9F9CC /* ResolverInstaller.swift in Sources */,
 				E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */,
 				798DCC7E03E3800EF57F70E6 /* SiteStatus.swift in Sources */,
 				3B3DD65AD1E8083ADE7CC33B /* SiteStore.swift in Sources */,
@@ -280,6 +365,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				76CFF1943138921FC4B6AE16 /* CaddyConfigBuilderTests.swift in Sources */,
+				C67A3783DB88C70ABC93BDDB /* DNSServerTests.swift in Sources */,
 				689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
