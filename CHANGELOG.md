@@ -14,6 +14,6 @@ All notable changes to this project are documented here.
 - `.localhost` works with no password on Macs that resolve it, which Portside checks at launch. Other suffixes use a DNS server and a guarded `/etc/resolver/<suffix>` installer that asks before it replaces another tool's resolver. Settings removes a resolver file Portside no longer uses.
 - An end-to-end check that resolves `portside-selftest.<suffix>`, fetches it through Caddy, and names the step that fails.
 - Bundled Caddy 2.11.7 reverse proxy with live reconfiguration, branded stopped and unknown-host pages, and static folder sites.
-- Tabbed logs window with ANSI colors, follow, search, clear and copy.
+- Tabbed logs window with ANSI colors, search, clear and copy. It shows the newest 1,000 lines with a button to load earlier ones, opens at the newest line, and follows new output only when you turn Follow on.
 - Settings for ports, launch at login, notifications and log mirroring.
 - Crash notifications, Sparkle updates, ad-hoc signed release builds and an appcast pipeline.
