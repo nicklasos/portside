@@ -52,8 +52,8 @@ A Homebrew cask is planned.
 </p>
 
 1. Click the Portside icon in the menu bar, then click **Add Site** (⌘N).
-2. Enter a name, such as `blog`, and choose the project folder. The site's domain is `blog.localhost`.
-3. Enter the command that starts your dev server, such as `npm run dev`, and the port it listens on, such as `5474`.
+2. Choose the project folder. The name fills in from the folder name, and you can change it. For a name such as `blog`, the site's domain is `blog.localhost`.
+3. Enter the command that starts your dev server, such as `npm run dev`, and the port it listens on, such as `5474`. If the folder has a `.env` with a port, such as `PORT` or `APP_PORT`, Portside fills it in and says which key it used.
 4. To run an API or a worker too, click **Add** under **Additional processes**. Give it a subdomain, such as `api`, to reach it at `api.blog.localhost`.
 5. Click **Save**, click the start button on the site's row, and then click the open button. Your browser opens `http://blog.localhost`.
 

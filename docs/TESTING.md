@@ -10,7 +10,7 @@ Run the whole suite from the repository root:
 xcodebuild -project Portside.xcodeproj -scheme Portside -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
 ```
 
-This is the command CI runs in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). The suite has 98 tests, which run in about 20 seconds after the build. `grep -h "func test" PortsideTests/*.swift | wc -l` counts them. It needs no network, no administrator password, and no bundled Caddy. The process tests spawn real `/bin/zsh` processes, and the DNS tests bind UDP sockets on loopback.
+This is the command CI runs in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). The suite has 116 tests, which run in about 20 seconds after the build. `grep -h "func test" PortsideTests/*.swift | wc -l` counts them. It needs no network, no administrator password, and no bundled Caddy. The process tests spawn real `/bin/zsh` processes, and the DNS tests bind UDP sockets on loopback.
 
 To run one test class, add `-only-testing`:
 
@@ -154,6 +154,36 @@ The other tests in this class cover start, stop, save, delete, and the menu bar 
 | `testSanitizeLabel` | Name input is lowercased and stripped to `[a-z0-9-]`. |
 | `testSiteStatusDerivation` | `SiteStatus` follows from the process states. |
 
+### `EnvPortDetectorTests`
+
+These tests pass the dotenv files in as strings, except the last one, which reads a real `.env`.
+
+| Test | Checks |
+| --- | --- |
+| `testNoFilesDetectsNothing` | No dotenv file, or one with no port, detects nothing. |
+| `testPortWinsOverOtherWebKeys` | `PORT` beats `APP_PORT` and `VITE_PORT`. |
+| `testPriorityTableOrder` | The named keys win in table order. |
+| `testDatabaseAndServicePortsAreIgnored` | `DB_PORT`, `FORWARD_DB_PORT`, `REDIS_PORT`, and similar keys never count. |
+| `testOtherPortKeyFallsBackInFileOrder` | Another `*_PORT` key counts, and the first one in the file wins. |
+| `testLaterFilesOverrideEarlierOnes` | `.env.development` overrides `.env.local`, which overrides `.env`. |
+| `testExampleFileIsNotRead` | `.env.example` is ignored. |
+| `testQuotesCommentsAndExport` | Quotes, comment lines, trailing comments, `export`, and spaces around `=` parse. |
+| `testTrivialReferenceIsExpanded` | `PORT=${SERVER_PORT}` takes the referenced value, and a missing reference is skipped. |
+| `testInvalidValuesAreSkipped` | `0`, `70000`, text, and negative numbers are skipped. |
+| `testLocalURLWithExplicitPortIsTheLastResort` | A localhost URL with a port counts only when no port key does. |
+| `testReadsFilesFromDisk` | A real `.env` with `DB_PORT` and `APP_PORT` gives `APP_PORT`. |
+
+### `FolderAutofillTests`
+
+| Test | Checks |
+| --- | --- |
+| `testNewSiteGetsNameFromFolderAndDetectedPort` | A new site takes `mycrm` from `My CRM` and the detected port. |
+| `testTypedPortIsKept` | A port the user typed stays. |
+| `testEmptyPortIsFilled` | An empty port takes the detected one. |
+| `testTypedNameIsKept` | A name the user typed stays. |
+| `testFilledValuesFollowTheNextFolder` | A name and port Portside filled change with the next folder. |
+| `testEditedSiteKeepsItsSavedPortAndName` | Editing a saved site never replaces its name or port. |
+
 ## Manual integration checklist
 
 Run this checklist before a release, on a release build from [`scripts/build-release.sh`](../scripts/build-release.sh). Each step says what you should see.
@@ -195,6 +225,12 @@ If the window says this Mac does not resolve `.localhost`, follow the `.test` st
 - [ ] `curl -s -o /dev/null -w '%{http_code}\n' http://blog.localhost` prints `200`.
 - [ ] Open `http://blog.localhost` in Safari and in Chrome. Both show the Vite page with no "Blocked request" error.
 - [ ] Edit `main.js` and save. Both browsers update without a full reload. This proves the HMR WebSocket passes through Caddy.
+
+### A port from `.env`
+
+- [ ] Create a folder with a `.env` that contains `DB_PORT=5432` and `APP_PORT=8000`.
+- [ ] Click **Add Site** and choose that folder. The name fills in from the folder name, the port becomes `8000`, and the line under the port says "Port 8000 from .env (APP_PORT)".
+- [ ] Change the port to `3001`. The line says ".env says 8000 (APP_PORT) ·" with a **Use** button. Click **Use**, and the port returns to `8000`.
 
 ### An extra process on a subdomain
 
