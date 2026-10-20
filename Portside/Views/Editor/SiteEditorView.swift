@@ -32,6 +32,7 @@ struct SiteEditorView: View {
     @State private var autofill: FolderAutofill
     @State private var scannedFolder: String
     @State private var envPort: DetectedPort?
+    @State private var detectedCommand: DetectedCommand?
 
     private var maxFormHeight: CGFloat { (NSScreen.main?.visibleFrame.height ?? 800) - 120 }
 
@@ -91,7 +92,7 @@ struct SiteEditorView: View {
                 .font(.title2.weight(.semibold))
             siteFields(issues)
             section("Main process")
-            ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues, envPort: envPort)
+            ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues, envPort: envPort, detectedCommand: detectedCommand)
             HStack {
                 section("Additional processes")
                 Button {
@@ -145,18 +146,22 @@ struct SiteEditorView: View {
         }
     }
 
-    /// Fills the name and main port from a folder that exists, once per folder value.
+    /// Fills the name, main port and main command from a folder that exists, once per folder value.
     private func scanFolder(_ path: String) {
         scannedFolder = path
         let expanded = (path as NSString).expandingTildeInPath
         var isDirectory: ObjCBool = false
         guard !expanded.isEmpty, FileManager.default.fileExists(atPath: expanded, isDirectory: &isDirectory), isDirectory.boolValue else {
             envPort = nil
+            detectedCommand = nil
             return
         }
-        let detected = EnvPortDetector.detect(in: URL(fileURLWithPath: expanded, isDirectory: true))
-        autofill = autofill.apply(folder: expanded, detected: detected, to: &draft)
+        let folder = URL(fileURLWithPath: expanded, isDirectory: true)
+        let detected = EnvPortDetector.detect(in: folder)
+        let command = CommandDetector.detect(in: folder)
+        autofill = autofill.apply(folder: expanded, detected: detected, command: command, to: &draft)
         envPort = detected
+        detectedCommand = command
     }
 
     private func extraBox(_ extra: Binding<ProcessConfig>, issues: [ValidationIssue]) -> some View {

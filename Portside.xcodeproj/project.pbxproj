@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		049E31B0EDD90D531D530215 /* SiteRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DDEAB6901C5B485AB7F34BF /* SiteRowView.swift */; };
+		0E221E60ED20BF1ACADA8B26 /* CommandDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80583E3DBCE3CCC37066F2FD /* CommandDetectorTests.swift */; };
 		0EA197175A575878CC6CBD14 /* SiteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDB27019664BB31F509D511 /* SiteEditorView.swift */; };
 		10DDE4F46672C65FD62C12FF /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365678D7E43493546B0296BE /* MenuBarView.swift */; };
 		124DD8BE547EA9F7784D3C22 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F20E44E4E00039E06218385 /* SettingsView.swift */; };
@@ -39,6 +40,7 @@
 		798DCC7E03E3800EF57F70E6 /* SiteStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9270A7646452D32DB6A624FC /* SiteStatus.swift */; };
 		7BB0547D240BB2968009DF70 /* EnvPortDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 358765601C52A57AD9732FCE /* EnvPortDetector.swift */; };
 		7FDC3C990C26C37394F7C470 /* ANSIParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E6D44372EB5C37A88DDB58 /* ANSIParser.swift */; };
+		83336BFC83BBB553197680F5 /* FolderAutofillTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F674E15F77009DCAD72D052A /* FolderAutofillTests.swift */; };
 		868804C8E272D68B9B15EA00 /* ProcessManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3911AE3EB1EF738961CCA63E /* ProcessManagerTests.swift */; };
 		89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A928D3FA53478440B6618289 /* Persistence.swift */; };
 		8BC98AF13555429397A3A33A /* PortChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BA43B38D3CC3FAA9B4F727 /* PortChecker.swift */; };
@@ -68,6 +70,7 @@
 		E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB013570A77DEFBE17D837C2 /* Site.swift */; };
 		EA6E4F332C7D85D0203316E0 /* FolderAutofill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F4A7E868EE2795961567699 /* FolderAutofill.swift */; };
 		EA98E2F65895F55F4C9B0F16 /* LogsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B466E3DDB27C5CE169E06D9 /* LogsWindow.swift */; };
+		F853AA2C9F777289545982BE /* CommandDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17CF3E06F66E12002C55124E /* CommandDetector.swift */; };
 		F9031FD8A8FD0223B0CCD184 /* caddy-static-disabled.json in Resources */ = {isa = PBXBuildFile; fileRef = 7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */; };
 		F98FD6DBC7334F595CDAA4F0 /* LogBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE921757008CF0B17FC9AC8C /* LogBuffer.swift */; };
 		FD5664646C7870334E4E2912 /* DomainSuffix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0432C68AD95AEF901F67FC47 /* DomainSuffix.swift */; };
@@ -96,6 +99,7 @@
 		0F1EA8021E3CC50C41F65084 /* PortsideTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PortsideTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		11BFDFC391E360490C37A697 /* Spawn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spawn.swift; sourceTree = "<group>"; };
 		1333F982FEFDE2D075BE268A /* ProcessConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessConfig.swift; sourceTree = "<group>"; };
+		17CF3E06F66E12002C55124E /* CommandDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandDetector.swift; sourceTree = "<group>"; };
 		190DAA0353D86872275C2476 /* Portside.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Portside.entitlements; sourceTree = "<group>"; };
 		1F20E44E4E00039E06218385 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1FFFE619613302A6BE7C2CC9 /* LogTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTextView.swift; sourceTree = "<group>"; };
@@ -124,6 +128,7 @@
 		753455F6BF71FBDE7D950E84 /* ManagedProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedProcess.swift; sourceTree = "<group>"; };
 		7D4ABCFAE5C2CB16BC98433B /* CaddyConfigBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaddyConfigBuilderTests.swift; sourceTree = "<group>"; };
 		7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-static-disabled.json"; sourceTree = "<group>"; };
+		80583E3DBCE3CCC37066F2FD /* CommandDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandDetectorTests.swift; sourceTree = "<group>"; };
 		896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSServerTests.swift; sourceTree = "<group>"; };
 		8BD92124D73C1E797842E28D /* AppPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPaths.swift; sourceTree = "<group>"; };
 		8D85F66C6944538093A05308 /* FolderPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPicker.swift; sourceTree = "<group>"; };
@@ -151,6 +156,7 @@
 		EB83C883AAF22B2978122F84 /* PortsideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideApp.swift; sourceTree = "<group>"; };
 		F21175A98E65DE30E0F070E2 /* ProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessManager.swift; sourceTree = "<group>"; };
 		F21FB895D295432BCCC2127D /* LogBufferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogBufferTests.swift; sourceTree = "<group>"; };
+		F674E15F77009DCAD72D052A /* FolderAutofillTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderAutofillTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -214,6 +220,7 @@
 			isa = PBXGroup;
 			children = (
 				48DC4E96D4C4F692BC8768E5 /* CaddyConfigBuilder.swift */,
+				17CF3E06F66E12002C55124E /* CommandDetector.swift */,
 				70CC3FF49FBCC1E9FFBB0929 /* DNSServer.swift */,
 				358765601C52A57AD9732FCE /* EnvPortDetector.swift */,
 				AE921757008CF0B17FC9AC8C /* LogBuffer.swift */,
@@ -337,9 +344,11 @@
 			children = (
 				B062112C573C758934A8D13C /* ANSIParserTests.swift */,
 				7D4ABCFAE5C2CB16BC98433B /* CaddyConfigBuilderTests.swift */,
+				80583E3DBCE3CCC37066F2FD /* CommandDetectorTests.swift */,
 				896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */,
 				A2A1FEFE7EEA65CAFCA60A38 /* DomainSuffixTests.swift */,
 				5368BA37278BFC07CACABE67 /* EnvPortDetectorTests.swift */,
+				F674E15F77009DCAD72D052A /* FolderAutofillTests.swift */,
 				F21FB895D295432BCCC2127D /* LogBufferTests.swift */,
 				363BAA2E97D521D4A4C43E9E /* LogWindowTests.swift */,
 				E85D59499ADE758CD5C70BF4 /* PortsideControllerTests.swift */,
@@ -497,6 +506,7 @@
 				9BA732FE0EC57F64ECA64A59 /* AppPaths.swift in Sources */,
 				47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */,
 				DA44017B1516EEE78272853A /* CaddyConfigBuilder.swift in Sources */,
+				F853AA2C9F777289545982BE /* CommandDetector.swift in Sources */,
 				DF6BF6A7734522F2348B08CE /* DNSServer.swift in Sources */,
 				35C8770EB177C88392FACDBB /* DebugLaunch.swift in Sources */,
 				FD5664646C7870334E4E2912 /* DomainSuffix.swift in Sources */,
@@ -543,9 +553,11 @@
 			files = (
 				DFD90D7DB8ADC8AAA07BA68F /* ANSIParserTests.swift in Sources */,
 				76CFF1943138921FC4B6AE16 /* CaddyConfigBuilderTests.swift in Sources */,
+				0E221E60ED20BF1ACADA8B26 /* CommandDetectorTests.swift in Sources */,
 				C67A3783DB88C70ABC93BDDB /* DNSServerTests.swift in Sources */,
 				9E24FBD16D62EE23EB911916 /* DomainSuffixTests.swift in Sources */,
 				CA3B7E7A28B71438C9011979 /* EnvPortDetectorTests.swift in Sources */,
+				83336BFC83BBB553197680F5 /* FolderAutofillTests.swift in Sources */,
 				2DA85BC5843F015E271969A9 /* LogBufferTests.swift in Sources */,
 				E17D42B0B9BB773D5F04C3D5 /* LogWindowTests.swift in Sources */,
 				3CCACB1C97D0123DE0A54FE4 /* PortsideControllerTests.swift in Sources */,

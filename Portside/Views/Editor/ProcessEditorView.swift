@@ -7,10 +7,9 @@ struct ProcessEditorView: View {
     let isMain: Bool
     let issues: [ValidationIssue]
     var envPort: DetectedPort? = nil
+    var detectedCommand: DetectedCommand? = nil
     @Environment(PortsideController.self) private var controller
     @State private var showsAdvanced = false
-
-    private static let commandExamples = ["make dev", "npm run dev", "go run .", "air"]
 
     private static let labelWidth: CGFloat = 70
 
@@ -62,18 +61,12 @@ struct ProcessEditorView: View {
             }
             GridRow {
                 label("Command")
-                VStack(alignment: .leading, spacing: 3) {
-                    TimelineView(.periodic(from: .now, by: 2.5)) { context in
-                        TextField("", text: $process.command, prompt: Text(placeholder(at: context.date)))
-                            .textFieldStyle(.roundedBorder)
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    if isMain, process.isStatic {
-                        Text("Leave empty to serve the folder as static files")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                    }
-                }
+                TextField("", text: $process.command, prompt: Text("e.g. npm run dev"))
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(.body, design: .monospaced))
+            }
+            if isMain, process.isStatic || detectedCommand != nil {
+                GridRow { Color.clear.gridCellUnsizedAxes([.horizontal, .vertical]); commandHint }
             }
             GridRow {
                 label("Host")
@@ -121,6 +114,29 @@ struct ProcessEditorView: View {
         .foregroundStyle(.secondary)
     }
 
+    private var commandHint: some View {
+        HStack(spacing: 4) {
+            if process.isStatic {
+                Text("Static site: Portside serves this folder's files directly. Add a command to run a dev server.")
+                if let detectedCommand {
+                    Button("Use \(detectedCommand.command)") { process.command = detectedCommand.command }
+                        .buttonStyle(.link)
+                }
+            } else if let detectedCommand {
+                if process.command == detectedCommand.command {
+                    Text("from \(detectedCommand.source)")
+                } else {
+                    Text("\(detectedCommand.source) says \(detectedCommand.command) ·")
+                    Button("Use") { process.command = detectedCommand.command }
+                        .buttonStyle(.link)
+                }
+            }
+        }
+        .font(.system(size: 11))
+        .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
     private func label(_ text: String) -> some View {
         Text(text)
             .frame(width: Self.labelWidth, alignment: .trailing)
@@ -129,11 +145,6 @@ struct ProcessEditorView: View {
 
     private func message(for field: SiteField) -> FieldMessage? {
         issues.first { $0.field == field }.map { FieldMessage(text: $0.message, isError: $0.severity == .error) }
-    }
-
-    private func placeholder(at date: Date) -> String {
-        let i = Int(date.timeIntervalSinceReferenceDate / 2.5) % Self.commandExamples.count
-        return Self.commandExamples[i]
     }
 
     private var preview: String {
