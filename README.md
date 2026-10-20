@@ -62,7 +62,7 @@ Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each comm
 
 **Proxy.** Portside bundles [Caddy](https://caddyserver.com) and runs it on port 80. Caddy matches the `Host` header and forwards the request to the right local port. WebSockets pass through, so hot reload works. Caddy sets `Host` to the upstream address, such as `localhost:5474`, so dev servers that check the host accept the request. The original host goes in `X-Forwarded-Host`. Turn on **Preserve Host header** for a process that needs the real host. When a site is stopped, its domain shows a Portside page that tells you to start it.
 
-**Process groups.** Each command runs under `/bin/zsh -lc` in its own process group. `make dev` and `npm run dev` fork child processes, and stopping only the parent would leave a child holding the port. Portside sends `SIGTERM` to the whole group, waits 5 seconds, then sends `SIGKILL`. If Portside crashes, it kills the leftover groups the next time it starts.
+**Process groups.** Each command runs under `/bin/zsh -ilc` in its own process group. `make dev` and `npm run dev` fork child processes, and stopping only the parent would leave a child holding the port. Portside sends `SIGTERM` to the whole group, waits 5 seconds, then sends `SIGKILL`. If Portside crashes, it kills the leftover groups the next time it starts.
 
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) covers the details.
 
@@ -112,7 +112,7 @@ A leading dot allows every subdomain of `.test`.
 
 ### My command fails with "command not found"
 
-Portside runs each command with `/bin/zsh -lc`, a login shell that is not interactive. That shell reads `~/.zshenv`, `~/.zprofile`, and `~/.zlogin`. It does not read `~/.zshrc`. If a tool such as nvm, asdf, or pyenv sets up `PATH` in `~/.zshrc`, move those lines to `~/.zprofile`, or use the tool's full path in the command. The log window shows the shell's error, such as `zsh:1: command not found: npm`.
+Portside runs each command with `/bin/zsh -ilc`, an interactive login shell. It reads `~/.zshenv`, `~/.zprofile`, `~/.zshrc`, and `~/.zlogin`, so nvm, fnm, asdf and Homebrew resolve the same way they do in your terminal. If a command still is not found, check that your shell setup does not depend on a terminal being attached, or use the tool's full path. The log window shows the shell's error, such as `zsh:1: command not found: npm`.
 
 ### Does Portside support HTTPS?
 

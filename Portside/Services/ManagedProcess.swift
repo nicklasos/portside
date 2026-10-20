@@ -10,7 +10,7 @@ struct LaunchSpec: Equatable {
     var environment: [String: String]
 }
 
-/// One spawned `/bin/zsh -lc <command>` and its process group, from spawn until the
+/// One spawned `/bin/zsh -ilc <command>` and its process group, from spawn until the
 /// leader is reaped and its output drained.
 final class ManagedProcess: @unchecked Sendable {
     let pid: pid_t
@@ -34,7 +34,8 @@ final class ManagedProcess: @unchecked Sendable {
     /// `onExit` runs on a background queue once the leader is reaped and output is drained.
     init(spec: LaunchSpec, buffer: LogBuffer, onExit: @escaping @Sendable (ManagedProcess, Int32) -> Void) throws {
         let env = ProcessInfo.processInfo.environment.merging(spec.environment) { $1 }
-        let child = try Spawn.run(executable: "/bin/zsh", arguments: ["-lc", spec.command], environment: env, workingDirectory: spec.workingDirectory)
+        // Interactive so ~/.zshrc runs: that is where nvm, fnm and most version managers put PATH.
+        let child = try Spawn.run(executable: "/bin/zsh", arguments: ["-ilc", spec.command], environment: env, workingDirectory: spec.workingDirectory)
         pid = child.pid
         startTime = Spawn.startTime(of: child.pid)
         self.buffer = buffer

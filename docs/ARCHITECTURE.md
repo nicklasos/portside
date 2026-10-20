@@ -15,7 +15,7 @@ Each service owns one concern. The UI layer in [`Portside/App`](../Portside/App)
 | `AppSettings` | [`Store/AppSettings.swift`](../Portside/Store/AppSettings.swift) | Preferences in `UserDefaults`: proxy port (80), DNS port (35353), Caddy admin port (2019), crash notifications (on), and log mirroring to disk (off). |
 | `SiteValidation` | [`Models/SiteValidation.swift`](../Portside/Models/SiteValidation.swift) | The rules a site must pass. Errors block a save. A shared `host:port` is only a warning. |
 | `ProcessManager` | [`Services/ProcessManager.swift`](../Portside/Services/ProcessManager.swift) | The state of every process, the spawned groups, one `LogBuffer` per process, and the `pids.json` ledger. |
-| `ManagedProcess` | [`Services/ManagedProcess.swift`](../Portside/Services/ManagedProcess.swift) | One spawned `/bin/zsh -lc <command>` from spawn until its leader is reaped and its output is drained. |
+| `ManagedProcess` | [`Services/ManagedProcess.swift`](../Portside/Services/ManagedProcess.swift) | One spawned `/bin/zsh -ilc <command>` from spawn until its leader is reaped and its output is drained. |
 | `Spawn` | [`Services/Spawn.swift`](../Portside/Services/Spawn.swift) | The `posix_spawn` call and the signals that stop a process group. |
 | `LogBuffer` | [`Services/LogBuffer.swift`](../Portside/Services/LogBuffer.swift) | A line ring buffer of 10,000 lines per process, with an optional mirror file. |
 | `DNSServer` | [`Services/DNSServer.swift`](../Portside/Services/DNSServer.swift) | The UDP DNS responder for `.test`. |
@@ -117,13 +117,13 @@ A static site has no process. `ProcessManager` keeps the ids of enabled static s
 | The process's `env` | Applied on top of the variables above. |
 | `TERM`, `FORCE_COLOR` | `xterm-256color` and `1`, so tools keep their colors in the log. |
 
-`Spawn.run` calls `posix_spawn` on `/bin/zsh -lc <command>` with the working directory set, stdin on `/dev/null`, and stdout and stderr on two pipes. The flags are:
+`Spawn.run` calls `posix_spawn` on `/bin/zsh -ilc <command>` with the working directory set, stdin on `/dev/null`, and stdout and stderr on two pipes. The flags are:
 
 - `POSIX_SPAWN_SETSID` makes the shell a new session and process-group leader, so `make`, `node`, and everything they fork share one group id.
 - `POSIX_SPAWN_CLOEXEC_DEFAULT` keeps other processes' pipe ends out of the child. Without it, one child's EOF never arrives while another child holds the write end.
 - `POSIX_SPAWN_SETSIGDEF` and `POSIX_SPAWN_SETSIGMASK` reset signal handling that the app would otherwise pass on, such as an ignored `SIGPIPE`.
 
-The shell is a login shell but not an interactive one. It reads `~/.zshenv`, `~/.zprofile`, and `~/.zlogin`, and it does not read `~/.zshrc`. A `PATH` set up in `~/.zprofile`, such as Homebrew's `brew shellenv`, reaches the command. A tool that only `~/.zshrc` loads, such as a default nvm install, does not.
+The shell is an interactive login shell (`-ilc`). It reads `~/.zshenv`, `~/.zprofile`, `~/.zshrc`, and `~/.zlogin`, so a tool that only `~/.zshrc` loads, such as a default nvm or fnm install, reaches the command. Without a terminal, zsh prints `can't change option: zle` once or twice into the log; that is harmless. Startup costs about 0.3 s more than a plain login shell.
 
 ### Stop
 
