@@ -173,6 +173,37 @@ These tests pass the dotenv files in as strings, except the last one, which read
 | `testLocalURLWithExplicitPortIsTheLastResort` | A localhost URL with a port counts only when no port key does. |
 | `testReadsFilesFromDisk` | A real `.env` with `DB_PORT` and `APP_PORT` gives `APP_PORT`. |
 
+### `CommandDetectorTests`
+
+These tests pass the folder's files in as strings, except the last one, which reads a real folder.
+
+| Test | Checks |
+| --- | --- |
+| `testEmptyFolderDetectsNothing` | An empty folder, or one with only HTML and docs, detects nothing. |
+| `testPackageDevScript` | `scripts.dev` gives `npm run dev` from `package.json (scripts.dev)`. |
+| `testPackageStartScriptWhenNoDev` | `scripts.start` gives `npm start` when there is no `dev` script. |
+| `testPackageWithoutDevOrStartFallsThrough` | A `package.json` with neither script detects nothing and lets later rules match. |
+| `testLockfilePicksThePackageManager` | `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, and `bun.lock` pick pnpm, yarn, and bun, including `bun run start`. |
+| `testPackageManagerFieldBeatsLockfiles` | `"packageManager": "pnpm@9.1.0"` wins over a `yarn.lock`. |
+| `testMalformedPackageJsonFallsThroughToTheNextRule` | Broken JSON detects nothing and lets a Makefile match. |
+| `testPackageJsonWithCommentsStillParses` | Comments and trailing commas in `package.json` parse. |
+| `testMakefileTargets` | `dev`, `run`, and `serve` targets give `make <target>` in `Makefile`, `makefile`, and `GNUmakefile`. |
+| `testMakefileDevBeatsRunAndServe` | `dev` wins over `run` and `serve`. |
+| `testMakefileIgnoresVariablesRecipesAndOtherTargets` | `dev := 1`, `run ::= 2`, recipe lines, and other targets do not count. |
+| `testArtisan` | An `artisan` file gives `php artisan serve --port=$PORT`. |
+| `testProcfileWebLine` | The `web:` line of a `Procfile` is the command. |
+| `testProcfileDevBeatsProcfile` | `Procfile.dev` wins over `Procfile`. |
+| `testProcfileWithoutWebFallsThrough` | A `Procfile` with no `web:` line detects nothing. |
+| `testDjango` | `manage.py` gives `python3 manage.py runserver $PORT`. |
+| `testRailsNeedsTheGemAndBinRails` | A Gemfile with `gem "rails"` and a `bin/rails` give `bin/rails server -p $PORT`, and either alone, or `rails-html-sanitizer`, does not. |
+| `testGo` | `.air.toml` gives `air`, and `go.mod` alone gives `go run .`. |
+| `testCargo` | `Cargo.toml` gives `cargo run`. |
+| `testDenoTasks` | A `dev` task in `deno.json` or a commented `deno.jsonc` gives `deno task dev`, and other tasks do not. |
+| `testPackageJsonBeatsMakefile` | A `dev` script wins over a Makefile `dev` target. |
+| `testFrameworkServerBeatsPackageJsonAssetScripts` | Laravel, Django, and Rails servers win over the `package.json` that builds their assets. |
+| `testExplicitProjectFilesBeatLanguageDefaults` | A Makefile wins over `go.mod`, and a `Procfile` wins over `Cargo.toml`. |
+| `testReadsTheRealFolder` | A real folder with `package.json` and `yarn.lock` gives `yarn run dev`. |
+
 ### `FolderAutofillTests`
 
 | Test | Checks |
@@ -181,8 +212,12 @@ These tests pass the dotenv files in as strings, except the last one, which read
 | `testTypedPortIsKept` | A port the user typed stays. |
 | `testEmptyPortIsFilled` | An empty port takes the detected one. |
 | `testTypedNameIsKept` | A name the user typed stays. |
-| `testFilledValuesFollowTheNextFolder` | A name and port Portside filled change with the next folder. |
-| `testEditedSiteKeepsItsSavedPortAndName` | Editing a saved site never replaces its name or port. |
+| `testFilledValuesFollowTheNextFolder` | A name, port, and command Portside filled change with the next folder. |
+| `testEditedSiteKeepsItsSavedPortAndName` | Editing a saved site never replaces its name, port, or command. |
+| `testEmptyCommandIsFilledFromTheFolder` | An empty command takes the detected one. |
+| `testTypedCommandIsKept` | A command the user typed stays. |
+| `testFilledCommandClearsForAFolderWithNoCommand` | A command Portside filled empties when the next folder has none, so the site reads as static. |
+| `testStaticSiteGetsACommandWhenItsFolderChanges` | A saved static site moved to a folder with a command takes that command. |
 
 ## Manual integration checklist
 
@@ -231,6 +266,15 @@ If the window says this Mac does not resolve `.localhost`, follow the `.test` st
 - [ ] Create a folder with a `.env` that contains `DB_PORT=5432` and `APP_PORT=8000`.
 - [ ] Click **Add Site** and choose that folder. The name fills in from the folder name, the port becomes `8000`, and the line under the port says "Port 8000 from .env (APP_PORT)".
 - [ ] Change the port to `3001`. The line says ".env says 8000 (APP_PORT) ·" with a **Use** button. Click **Use**, and the port returns to `8000`.
+
+### A command from the folder
+
+- [ ] Create a folder with a `package.json` that contains `{"scripts": {"dev": "node server.js"}}`.
+- [ ] Click **Add Site** and choose that folder. Command becomes `npm run dev`, and the line under it says "from package.json (scripts.dev)".
+- [ ] Change the command to `node server.js`. The line says "package.json (scripts.dev) says npm run dev ·" with a **Use** button. Click **Use**, and the command returns to `npm run dev`.
+- [ ] Clear the command. The line says "Static site: Portside serves this folder's files directly. Add a command to run a dev server." with a **Use npm run dev** button.
+- [ ] Click **Add Site** and choose an empty folder. Command stays empty, its placeholder reads `e.g. npm run dev`, and the static-site line shows.
+- [ ] Save the empty-folder site. Its row in the menu has a switch, and hovering the switch shows "Static site, served from the folder".
 
 ### An extra process on a subdomain
 
