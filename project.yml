@@ -1,0 +1,82 @@
+name: Portside
+options:
+  bundleIdPrefix: com.nicklasos
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.6.0"
+  swift-nio:
+    url: https://github.com/apple/swift-nio
+    from: "2.65.0"
+targets:
+  Portside:
+    type: application
+    platform: macOS
+    sources:
+      - path: Portside
+        excludes:
+          - "Resources/caddy"
+          - "Resources/Licenses"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nicklasos.portside
+        PRODUCT_NAME: Portside
+        INFOPLIST_FILE: Portside/App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Portside/Portside.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        COMBINE_HIDPI_IMAGES: YES
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    dependencies:
+      - package: Sparkle
+      - package: swift-nio
+        product: NIOCore
+      - package: swift-nio
+        product: NIOPosix
+    postBuildScripts:
+      - name: Embed Caddy
+        basedOnDependencyAnalysis: false
+        script: |
+          SRC="${SRCROOT}/Portside/Resources/caddy"
+          DST="${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}/caddy"
+          if [ -f "$SRC" ]; then
+            cp -f "$SRC" "$DST"
+            chmod +x "$DST"
+            mkdir -p "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Licenses"
+            cp -f "${SRCROOT}/Portside/Resources/Licenses/"* "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Licenses/" 2>/dev/null || true
+          else
+            echo "warning: Portside/Resources/caddy missing; run scripts/fetch-caddy.sh"
+          fi
+  PortsideTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: PortsideTests
+    dependencies:
+      - target: Portside
+    settings:
+      base:
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Portside.app/Contents/MacOS/Portside"
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Portside:
+    build:
+      targets:
+        Portside: all
+        PortsideTests: [test]
+    test:
+      targets:
+        - PortsideTests

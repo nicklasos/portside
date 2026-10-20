@@ -1,0 +1,12 @@
+.DS_Store
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+.swiftpm/
+Portside/Resources/caddy
+Portside/Resources/Licenses/
+dist/
+.audit/
+*.iconset/

@@ -1,0 +1,569 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		10DDE4F46672C65FD62C12FF /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365678D7E43493546B0296BE /* MenuBarView.swift */; };
+		3B3DD65AD1E8083ADE7CC33B /* SiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CD73E937BA9AFD7C9FF00D /* SiteStore.swift */; };
+		47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3345620368D6CD91E90311C1 /* AppSettings.swift */; };
+		5EB210EE6B5B8D8D42BA314C /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = A3BCBDF791C4278E30A0B91E /* NIOCore */; };
+		689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B75ED958BAF6F739693E706A /* SiteStoreTests.swift */; };
+		798DCC7E03E3800EF57F70E6 /* SiteStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9270A7646452D32DB6A624FC /* SiteStatus.swift */; };
+		89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A928D3FA53478440B6618289 /* Persistence.swift */; };
+		8EE0BF56870C58E33D7A6A75 /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = F9633B64B2ACF581E6B5A5A5 /* NIOPosix */; };
+		9A83B0E1E957DBA4D2A7E8CF /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = EDE65FD1F58D50D09639D599 /* Sparkle */; };
+		9BA732FE0EC57F64ECA64A59 /* AppPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD92124D73C1E797842E28D /* AppPaths.swift */; };
+		C9EE1913639F22AC5CF9AD7A /* ProcessConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1333F982FEFDE2D075BE268A /* ProcessConfig.swift */; };
+		D080D58553B1481A8AC4CDBB /* PortsideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB83C883AAF22B2978122F84 /* PortsideApp.swift */; };
+		E1091483F80FEACBA38CE70A /* SiteValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3371F8479F06873CE6C9225 /* SiteValidation.swift */; };
+		E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB013570A77DEFBE17D837C2 /* Site.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B8989DE377DD5C3A14AEEDD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 62758E0A41282DD2024CFCF0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 33787C076DE4FA1D34181976;
+			remoteInfo = Portside;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		028DF3D1446FAD09B9FEE70D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0F1EA8021E3CC50C41F65084 /* PortsideTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PortsideTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1333F982FEFDE2D075BE268A /* ProcessConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessConfig.swift; sourceTree = "<group>"; };
+		190DAA0353D86872275C2476 /* Portside.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Portside.entitlements; sourceTree = "<group>"; };
+		3345620368D6CD91E90311C1 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		365678D7E43493546B0296BE /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		693F1329B8E0E6246DD06F45 /* Portside.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portside.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BD92124D73C1E797842E28D /* AppPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPaths.swift; sourceTree = "<group>"; };
+		9270A7646452D32DB6A624FC /* SiteStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStatus.swift; sourceTree = "<group>"; };
+		A2CD73E937BA9AFD7C9FF00D /* SiteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStore.swift; sourceTree = "<group>"; };
+		A3371F8479F06873CE6C9225 /* SiteValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteValidation.swift; sourceTree = "<group>"; };
+		A928D3FA53478440B6618289 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		B75ED958BAF6F739693E706A /* SiteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStoreTests.swift; sourceTree = "<group>"; };
+		DB013570A77DEFBE17D837C2 /* Site.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
+		EB83C883AAF22B2978122F84 /* PortsideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0841EC5D4CC56737699DA826 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9A83B0E1E957DBA4D2A7E8CF /* Sparkle in Frameworks */,
+				5EB210EE6B5B8D8D42BA314C /* NIOCore in Frameworks */,
+				8EE0BF56870C58E33D7A6A75 /* NIOPosix in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		05A92E420E3917F7CBE0341A /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				3345620368D6CD91E90311C1 /* AppSettings.swift */,
+				A928D3FA53478440B6618289 /* Persistence.swift */,
+				A2CD73E937BA9AFD7C9FF00D /* SiteStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		075852CDBC31825DDA40AD24 = {
+			isa = PBXGroup;
+			children = (
+				D2BD9F6E06D5CB93DB055915 /* Portside */,
+				F3220EB177626A9B48443F47 /* PortsideTests */,
+				928487CCFFBC672CF1357E1C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		115A418D0C2CA523969B6067 /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				365678D7E43493546B0296BE /* MenuBarView.swift */,
+			);
+			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		1F72B348FD8BE6DBF3198D82 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				8BD92124D73C1E797842E28D /* AppPaths.swift */,
+				028DF3D1446FAD09B9FEE70D /* Info.plist */,
+				EB83C883AAF22B2978122F84 /* PortsideApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		7EBF685DE98E4D6955AD0B9D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				115A418D0C2CA523969B6067 /* MenuBar */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		928487CCFFBC672CF1357E1C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				693F1329B8E0E6246DD06F45 /* Portside.app */,
+				0F1EA8021E3CC50C41F65084 /* PortsideTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9910EB765AA901D42AD8A8F3 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				1333F982FEFDE2D075BE268A /* ProcessConfig.swift */,
+				DB013570A77DEFBE17D837C2 /* Site.swift */,
+				9270A7646452D32DB6A624FC /* SiteStatus.swift */,
+				A3371F8479F06873CE6C9225 /* SiteValidation.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D2BD9F6E06D5CB93DB055915 /* Portside */ = {
+			isa = PBXGroup;
+			children = (
+				190DAA0353D86872275C2476 /* Portside.entitlements */,
+				1F72B348FD8BE6DBF3198D82 /* App */,
+				9910EB765AA901D42AD8A8F3 /* Models */,
+				05A92E420E3917F7CBE0341A /* Store */,
+				7EBF685DE98E4D6955AD0B9D /* Views */,
+			);
+			path = Portside;
+			sourceTree = "<group>";
+		};
+		F3220EB177626A9B48443F47 /* PortsideTests */ = {
+			isa = PBXGroup;
+			children = (
+				B75ED958BAF6F739693E706A /* SiteStoreTests.swift */,
+			);
+			path = PortsideTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		310AAC45DE5B85918C84B4A1 /* PortsideTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AEDC7000644E59109F83997D /* Build configuration list for PBXNativeTarget "PortsideTests" */;
+			buildPhases = (
+				E570F55CF0B44932C5600F14 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F20A2B32334FD84822B561DA /* PBXTargetDependency */,
+			);
+			name = PortsideTests;
+			packageProductDependencies = (
+			);
+			productName = PortsideTests;
+			productReference = 0F1EA8021E3CC50C41F65084 /* PortsideTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		33787C076DE4FA1D34181976 /* Portside */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8F2003AB031E14069B5977BD /* Build configuration list for PBXNativeTarget "Portside" */;
+			buildPhases = (
+				9599B929AAB731001A4F201C /* Sources */,
+				0841EC5D4CC56737699DA826 /* Frameworks */,
+				8A8CF4E4A60AE0E700A94F63 /* Embed Caddy */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Portside;
+			packageProductDependencies = (
+				EDE65FD1F58D50D09639D599 /* Sparkle */,
+				A3BCBDF791C4278E30A0B91E /* NIOCore */,
+				F9633B64B2ACF581E6B5A5A5 /* NIOPosix */,
+			);
+			productName = Portside;
+			productReference = 693F1329B8E0E6246DD06F45 /* Portside.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		62758E0A41282DD2024CFCF0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					310AAC45DE5B85918C84B4A1 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					33787C076DE4FA1D34181976 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = FB51DF0BBE9FFC726AFE7FB7 /* Build configuration list for PBXProject "Portside" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 075852CDBC31825DDA40AD24;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BF0BDF34F0CDCDC8F07F5A5F /* XCRemoteSwiftPackageReference "Sparkle" */,
+				2E04C7D590CC442446EB4739 /* XCRemoteSwiftPackageReference "swift-nio" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 928487CCFFBC672CF1357E1C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				33787C076DE4FA1D34181976 /* Portside */,
+				310AAC45DE5B85918C84B4A1 /* PortsideTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8A8CF4E4A60AE0E700A94F63 /* Embed Caddy */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Caddy";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "SRC=\"${SRCROOT}/Portside/Resources/caddy\"\nDST=\"${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}/caddy\"\nif [ -f \"$SRC\" ]; then\n  cp -f \"$SRC\" \"$DST\"\n  chmod +x \"$DST\"\n  mkdir -p \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Licenses\"\n  cp -f \"${SRCROOT}/Portside/Resources/Licenses/\"* \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Licenses/\" 2>/dev/null || true\nelse\n  echo \"warning: Portside/Resources/caddy missing; run scripts/fetch-caddy.sh\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9599B929AAB731001A4F201C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9BA732FE0EC57F64ECA64A59 /* AppPaths.swift in Sources */,
+				47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */,
+				10DDE4F46672C65FD62C12FF /* MenuBarView.swift in Sources */,
+				89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */,
+				D080D58553B1481A8AC4CDBB /* PortsideApp.swift in Sources */,
+				C9EE1913639F22AC5CF9AD7A /* ProcessConfig.swift in Sources */,
+				E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */,
+				798DCC7E03E3800EF57F70E6 /* SiteStatus.swift in Sources */,
+				3B3DD65AD1E8083ADE7CC33B /* SiteStore.swift in Sources */,
+				E1091483F80FEACBA38CE70A /* SiteValidation.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E570F55CF0B44932C5600F14 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				689D6215F848D7133B87FB99 /* SiteStoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F20A2B32334FD84822B561DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 33787C076DE4FA1D34181976 /* Portside */;
+			targetProxy = B8989DE377DD5C3A14AEEDD2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3B410C286FBC31D7368CD133 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3FFDFA4D14B60FCAB327BB76 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Portside/Portside.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = Portside/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicklasos.portside;
+				PRODUCT_NAME = Portside;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		5A4B27DE61BAA0AD019B84FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Portside/Portside.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = Portside/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicklasos.portside;
+				PRODUCT_NAME = Portside;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		5D88CC4459ED08B72FE466C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicklasos.PortsideTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Portside.app/Contents/MacOS/Portside";
+			};
+			name = Debug;
+		};
+		91A952469DB6D670722D5113 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		DD3673A20B84E709A175090F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicklasos.PortsideTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Portside.app/Contents/MacOS/Portside";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8F2003AB031E14069B5977BD /* Build configuration list for PBXNativeTarget "Portside" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A4B27DE61BAA0AD019B84FE /* Debug */,
+				3FFDFA4D14B60FCAB327BB76 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AEDC7000644E59109F83997D /* Build configuration list for PBXNativeTarget "PortsideTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D88CC4459ED08B72FE466C0 /* Debug */,
+				DD3673A20B84E709A175090F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FB51DF0BBE9FFC726AFE7FB7 /* Build configuration list for PBXProject "Portside" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3B410C286FBC31D7368CD133 /* Debug */,
+				91A952469DB6D670722D5113 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2E04C7D590CC442446EB4739 /* XCRemoteSwiftPackageReference "swift-nio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.65.0;
+			};
+		};
+		BF0BDF34F0CDCDC8F07F5A5F /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A3BCBDF791C4278E30A0B91E /* NIOCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2E04C7D590CC442446EB4739 /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOCore;
+		};
+		EDE65FD1F58D50D09639D599 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF0BDF34F0CDCDC8F07F5A5F /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+		F9633B64B2ACF581E6B5A5A5 /* NIOPosix */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2E04C7D590CC442446EB4739 /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOPosix;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 62758E0A41282DD2024CFCF0 /* Project object */;
+}
