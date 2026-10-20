@@ -137,7 +137,7 @@ Not yet. Portside serves plain HTTP. HTTPS through Caddy's local certificate aut
 
 ## Development
 
-You need Xcode 15.4 or later and [Homebrew](https://brew.sh).
+You need Xcode 16.3 or later (Swift 6.1 tools, required by swift-nio) and [Homebrew](https://brew.sh).
 
 ```sh
 ./scripts/bootstrap.sh
