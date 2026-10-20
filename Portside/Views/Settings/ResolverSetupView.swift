@@ -26,6 +26,7 @@ struct ResolverSetupView: View {
         }
         .padding(22)
         .frame(width: 480)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var title: String {
@@ -92,6 +93,7 @@ struct ResolverSetupView: View {
         Text(text.trimmingCharacters(in: .newlines))
             .font(.system(size: 12, design: .monospaced))
             .textSelection(.enabled)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))

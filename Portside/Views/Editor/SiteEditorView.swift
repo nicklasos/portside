@@ -28,6 +28,9 @@ struct SiteEditorView: View {
     @State private var notice: String?
     @State private var saveError: String?
     @State private var isSaving = false
+    @State private var formHeight: CGFloat = 0
+
+    private var maxFormHeight: CGFloat { (NSScreen.main?.visibleFrame.height ?? 800) - 120 }
 
     init(original: Site?) {
         self.original = original
@@ -40,39 +43,55 @@ struct SiteEditorView: View {
     var body: some View {
         let issues = controller.store.issues(for: draft)
         VStack(alignment: .leading, spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(original == nil ? "New Site" : "Edit \(original!.name)")
-                        .font(.title2.weight(.semibold))
-                    siteFields(issues)
-                    section("Main process")
-                    ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues)
-                    HStack {
-                        section("Additional processes")
-                        Button {
-                            draft.extras.append(newExtra())
-                        } label: {
-                            Label("Add", systemImage: "plus")
-                        }
-                        .controlSize(.small)
-                    }
-                    ForEach($draft.extras) { $extra in
-                        extraBox($extra, issues: issues)
-                    }
-                    Toggle("Start automatically when Portside launches", isOn: $draft.autoStart)
-                }
-                .padding(20)
+            // The window grows with the site and only scrolls once the form no longer fits on screen.
+            if formHeight > maxFormHeight {
+                ScrollView { measuredForm(issues) }
+                    .frame(height: maxFormHeight)
+            } else {
+                measuredForm(issues)
             }
             Divider()
             footer(issues)
         }
         .frame(width: 600)
-        .frame(minHeight: 420, idealHeight: 640, maxHeight: 900)
         .navigationTitle(original == nil ? "New Site" : "\(original!.name) — Edit")
     }
 
+    private func measuredForm(_ issues: [ValidationIssue]) -> some View {
+        form(issues)
+            .fixedSize(horizontal: false, vertical: true)
+            .background(GeometryReader { proxy in
+                Color.clear.preference(key: FormHeightKey.self, value: proxy.size.height)
+            })
+            .onPreferenceChange(FormHeightKey.self) { formHeight = $0 }
+    }
+
+    private func form(_ issues: [ValidationIssue]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(original == nil ? "New Site" : "Edit \(original!.name)")
+                .font(.title2.weight(.semibold))
+            siteFields(issues)
+            section("Main process")
+            ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues)
+            HStack {
+                section("Additional processes")
+                Button {
+                    draft.extras.append(newExtra())
+                } label: {
+                    Label("Add", systemImage: "plus")
+                }
+                .controlSize(.small)
+            }
+            ForEach($draft.extras) { $extra in
+                extraBox($extra, issues: issues)
+            }
+            Toggle("Start automatically when Portside launches", isOn: $draft.autoStart)
+        }
+        .padding(.horizontal, 20).padding(.vertical, 16)
+    }
+
     private func siteFields(_ issues: [ValidationIssue]) -> some View {
-        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 8, verticalSpacing: 8) {
+        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 8, verticalSpacing: 6) {
             GridRow {
                 Text("Name").frame(width: 70, alignment: .trailing).gridColumnAlignment(.trailing)
                 VStack(alignment: .leading, spacing: 3) {
@@ -110,14 +129,15 @@ struct SiteEditorView: View {
     }
 
     private func extraBox(_ extra: Binding<ProcessConfig>, issues: [ValidationIssue]) -> some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .trailing, spacing: 2) {
             Button("Remove", role: .destructive) {
                 draft.extras.removeAll { $0.id == extra.wrappedValue.id }
             }
             .controlSize(.small)
             ProcessEditorView(process: extra, site: draft, isMain: false, issues: issues)
         }
-        .padding(12)
+        .frame(maxWidth: .infinity)
+        .padding(10)
         .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.04)))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.1)))
     }
@@ -189,4 +209,9 @@ struct SiteEditorView: View {
             }
         }
     }
+}
+
+private struct FormHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
