@@ -7,6 +7,7 @@ import SwiftUI
 /// `-PortsideSnapshot <file.png>` then renders that window to a PNG from inside the app, which
 /// needs no screen-recording permission, and writes the menu bar glyph variants next to it.
 /// `-PortsideSnapshotDelay <seconds>` waits longer than the default 5, for checks that take time.
+/// `-PortsideEditorFolder <path>` makes a new-site editor pick that folder as **Choose…** would.
 @MainActor
 enum DebugLaunch {
     private static var done = false

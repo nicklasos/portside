@@ -29,15 +29,21 @@ struct SiteEditorView: View {
     @State private var saveError: String?
     @State private var isSaving = false
     @State private var formHeight: CGFloat = 0
+    @State private var autofill: FolderAutofill
+    @State private var scannedFolder: String
+    @State private var envPort: DetectedPort?
 
     private var maxFormHeight: CGFloat { (NSScreen.main?.visibleFrame.height ?? 800) - 120 }
 
     init(original: Site?) {
         self.original = original
+        let defaultPort = 3000
         _draft = State(initialValue: original ?? Site(
             name: "", folder: "",
-            main: ProcessConfig(label: "Frontend", command: "", port: 3000)
+            main: ProcessConfig(label: "Frontend", command: "", port: defaultPort)
         ))
+        _autofill = State(initialValue: original == nil ? .newSite(defaultPort: defaultPort) : FolderAutofill())
+        _scannedFolder = State(initialValue: original?.folder ?? "")
     }
 
     var body: some View {
@@ -55,6 +61,19 @@ struct SiteEditorView: View {
         }
         .frame(width: 600)
         .navigationTitle(original == nil ? "New Site" : "\(original!.name) — Edit")
+        .task(id: draft.folder) {
+            guard draft.folder != scannedFolder else { return }
+            try? await Task.sleep(for: .milliseconds(400))
+            if !Task.isCancelled { scanFolder(draft.folder) }
+        }
+        #if DEBUG
+        .onAppear {
+            if original == nil, let path = UserDefaults.standard.string(forKey: "PortsideEditorFolder") {
+                draft.folder = path
+                scanFolder(path)
+            }
+        }
+        #endif
     }
 
     private func measuredForm(_ issues: [ValidationIssue]) -> some View {
@@ -72,7 +91,7 @@ struct SiteEditorView: View {
                 .font(.title2.weight(.semibold))
             siteFields(issues)
             section("Main process")
-            ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues)
+            ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues, envPort: envPort)
             HStack {
                 section("Additional processes")
                 Button {
@@ -120,12 +139,24 @@ struct SiteEditorView: View {
                     placeholder: "~/Projects/blog",
                     error: draft.folder.isEmpty ? nil : issues.first { $0.field == .folder }?.message
                 ) { path in
-                    if draft.name.isEmpty {
-                        draft.name = SiteValidation.sanitizeLabel(URL(fileURLWithPath: path).lastPathComponent)
-                    }
+                    scanFolder(path)
                 }
             }
         }
+    }
+
+    /// Fills the name and main port from a folder that exists, once per folder value.
+    private func scanFolder(_ path: String) {
+        scannedFolder = path
+        let expanded = (path as NSString).expandingTildeInPath
+        var isDirectory: ObjCBool = false
+        guard !expanded.isEmpty, FileManager.default.fileExists(atPath: expanded, isDirectory: &isDirectory), isDirectory.boolValue else {
+            envPort = nil
+            return
+        }
+        let detected = EnvPortDetector.detect(in: URL(fileURLWithPath: expanded, isDirectory: true))
+        autofill = autofill.apply(folder: expanded, detected: detected, to: &draft)
+        envPort = detected
     }
 
     private func extraBox(_ extra: Binding<ProcessConfig>, issues: [ValidationIssue]) -> some View {

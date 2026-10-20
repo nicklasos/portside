@@ -6,6 +6,7 @@ struct ProcessEditorView: View {
     let site: Site
     let isMain: Bool
     let issues: [ValidationIssue]
+    var envPort: DetectedPort? = nil
     @Environment(PortsideController.self) private var controller
     @State private var showsAdvanced = false
 
@@ -90,6 +91,9 @@ struct ProcessEditorView: View {
             if let message = message(for: .port(process.id)) {
                 GridRow { Color.clear.gridCellUnsizedAxes([.horizontal, .vertical]); message }
             }
+            if isMain, let envPort {
+                GridRow { Color.clear.gridCellUnsizedAxes([.horizontal, .vertical]); envPortHint(envPort) }
+            }
             if !isMain {
                 GridRow {
                     label("Folder")
@@ -101,6 +105,20 @@ struct ProcessEditorView: View {
                 }
             }
         }
+    }
+
+    private func envPortHint(_ detected: DetectedPort) -> some View {
+        HStack(spacing: 4) {
+            if process.port == detected.port {
+                Text("Port \(String(detected.port)) from \(detected.file) (\(detected.key))")
+            } else {
+                Text("\(detected.file) says \(String(detected.port)) (\(detected.key)) ·")
+                Button("Use") { process.port = detected.port }
+                    .buttonStyle(.link)
+            }
+        }
+        .font(.system(size: 11))
+        .foregroundStyle(.secondary)
     }
 
     private func label(_ text: String) -> some View {
