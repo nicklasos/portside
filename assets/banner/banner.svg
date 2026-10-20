@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B1E3A"/>
+      <stop offset="1" stop-color="#0F3D5E"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#sea)"/>
+  <path d="M0 560 C 160 544 320 576 480 560 S 800 544 960 560 S 1200 576 1280 562 V 640 H 0 Z" fill="#1C5A80" opacity="0.6"/>
+  <image x="90" y="110" width="420" height="420" href="../icon/portside.svg"/>
+  <g font-family="'SF Pro Rounded', ui-rounded, system-ui, sans-serif" fill="#F4F1EA">
+    <text x="560" y="330" font-size="136" font-weight="600" letter-spacing="-2">Portside</text>
+    <text x="566" y="404" font-size="40" font-weight="500" opacity="0.8">Local dev servers, on <tspan fill="#F2A33C" font-family="'SF Mono', Menlo, monospace">.test</tspan> domains.</text>
+  </g>
+</svg>
