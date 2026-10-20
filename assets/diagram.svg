@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>How a request to smartcity.test reaches a local dev server through Portside</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#57606a"/>
+    </marker>
+    <style>
+      .box { fill: #f6f8fa; stroke: #8c959f; stroke-width: 1.5; }
+      .app { fill: #eef4fb; stroke: #0f3d5e; stroke-width: 2; }
+      .svc { fill: #ffffff; stroke: #0f3d5e; stroke-width: 1.5; }
+      .caddy { fill: #fff4e5; stroke: #d4861f; stroke-width: 1.5; }
+      .dev { fill: #eaf7ee; stroke: #2da44e; stroke-width: 1.5; }
+      .group { fill: none; stroke: #2da44e; stroke-width: 1.5; stroke-dasharray: 6 4; }
+      .line { fill: none; stroke: #57606a; stroke-width: 1.6; marker-end: url(#arrow); }
+      .back { fill: none; stroke: #57606a; stroke-width: 1.6; stroke-dasharray: 5 4; marker-end: url(#arrow); }
+      .title { font-size: 15px; font-weight: 600; fill: #1f2328; }
+      .text { font-size: 12.5px; fill: #1f2328; }
+      .muted { font-size: 12px; fill: #57606a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; fill: #1f2328; }
+      .label { font-size: 12px; fill: #57606a; }
+      .step { fill: #0f3d5e; }
+      .stepnum { font-size: 11px; font-weight: 700; fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="999" height="539" rx="14" fill="#ffffff" stroke="#d0d7de"/>
+
+  <!-- Browser -->
+  <rect class="box" x="30" y="60" width="140" height="70" rx="8"/>
+  <text class="title" x="100" y="88" text-anchor="middle">Browser</text>
+  <text class="mono" x="100" y="110" text-anchor="middle">smartcity.test</text>
+
+  <!-- Resolver file -->
+  <rect class="box" x="250" y="60" width="200" height="70" rx="8"/>
+  <text class="title" x="350" y="86" text-anchor="middle">macOS resolver</text>
+  <text class="mono" x="350" y="106" text-anchor="middle">/etc/resolver/test</text>
+  <text class="muted" x="350" y="122" text-anchor="middle">nameserver 127.0.0.1, port 35353</text>
+
+  <!-- Portside.app -->
+  <rect class="app" x="540" y="30" width="430" height="230" rx="12"/>
+  <text class="title" x="560" y="54">Portside.app</text>
+  <text class="muted" x="950" y="54" text-anchor="end">menu bar app</text>
+
+  <rect class="svc" x="560" y="70" width="390" height="70" rx="8"/>
+  <text class="title" x="580" y="96">DNSServer</text>
+  <text class="mono" x="580" y="118">UDP 127.0.0.1:35353</text>
+  <text class="muted" x="930" y="96" text-anchor="end">*.test → A 127.0.0.1</text>
+  <text class="muted" x="930" y="118" text-anchor="end">AAAA ::1</text>
+
+  <rect class="svc" x="560" y="170" width="180" height="70" rx="8"/>
+  <text class="title" x="650" y="198" text-anchor="middle">ProxyManager</text>
+  <text class="muted" x="650" y="220" text-anchor="middle">builds Caddy JSON</text>
+
+  <rect class="svc" x="770" y="170" width="180" height="70" rx="8"/>
+  <text class="title" x="860" y="198" text-anchor="middle">ProcessManager</text>
+  <text class="muted" x="860" y="220" text-anchor="middle">spawns, stops, logs</text>
+
+  <!-- Caddy -->
+  <rect class="caddy" x="250" y="300" width="190" height="140" rx="8"/>
+  <text class="title" x="345" y="328" text-anchor="middle">Caddy</text>
+  <text class="mono" x="345" y="350" text-anchor="middle">listens on :80</text>
+  <text class="muted" x="345" y="372" text-anchor="middle">routes by Host header</text>
+  <text class="muted" x="345" y="392" text-anchor="middle">admin API</text>
+  <text class="mono" x="345" y="410" text-anchor="middle">127.0.0.1:2019</text>
+
+  <!-- Dev servers -->
+  <rect class="group" x="600" y="290" width="370" height="180" rx="10"/>
+  <text class="muted" x="616" y="312">process groups, each under /bin/zsh -lc</text>
+  <rect class="dev" x="620" y="325" width="330" height="55" rx="8"/>
+  <text class="mono" x="640" y="348">localhost:5474</text>
+  <text class="muted" x="640" y="368">Frontend: make dev</text>
+  <rect class="dev" x="620" y="395" width="330" height="55" rx="8"/>
+  <text class="mono" x="640" y="418">localhost:8185</text>
+  <text class="muted" x="640" y="438">API: make dev</text>
+
+  <!-- 1: lookup -->
+  <path class="line" d="M170,85 L248,85"/>
+  <path class="line" d="M450,85 L558,85"/>
+  <!-- 2: answer -->
+  <path class="back" d="M558,118 L452,118"/>
+  <path class="back" d="M250,118 L172,118"/>
+  <text class="label" x="210" y="78" text-anchor="middle">lookup</text>
+  <text class="label" x="495" y="78" text-anchor="middle">lookup</text>
+  <text class="label" x="210" y="142" text-anchor="middle">127.0.0.1</text>
+  <text class="label" x="495" y="142" text-anchor="middle">127.0.0.1</text>
+
+  <!-- 3: HTTP to Caddy -->
+  <path class="line" d="M100,130 L100,370 L248,370"/>
+  <text class="label" x="110" y="355">Host: smartcity.test</text>
+  <text class="label" x="110" y="390">127.0.0.1:80</text>
+
+  <!-- 4: Caddy to upstreams -->
+  <path class="line" d="M440,352 L618,352"/>
+  <path class="line" d="M440,422 L618,422"/>
+  <text class="mono" x="452" y="344">smartcity.test</text>
+  <text class="mono" x="452" y="414">api.smartcity.test</text>
+
+  <!-- Control lines from Portside -->
+  <path class="line" d="M560,205 L345,205 L345,298"/>
+  <text class="label" x="355" y="198">runs Caddy, POST /load</text>
+  <path class="line" d="M860,240 L860,288"/>
+  <text class="label" x="870" y="270">spawns</text>
+
+  <!-- Step markers -->
+  <circle class="step" cx="210" cy="100" r="9"/><text class="stepnum" x="210" y="104" text-anchor="middle">1</text>
+  <circle class="step" cx="495" cy="100" r="9"/><text class="stepnum" x="495" y="104" text-anchor="middle">2</text>
+  <circle class="step" cx="100" cy="300" r="9"/><text class="stepnum" x="100" y="304" text-anchor="middle">3</text>
+  <circle class="step" cx="530" cy="387" r="9"/><text class="stepnum" x="530" y="391" text-anchor="middle">4</text>
+
+  <!-- Legend -->
+  <text class="muted" x="30" y="500">1. macOS sends .test lookups to Portside's DNS server.</text>
+  <text class="muted" x="30" y="520">2. Every .test name resolves to loopback.</text>
+  <text class="muted" x="520" y="500">3. The browser connects to Caddy on port 80.</text>
+  <text class="muted" x="520" y="520">4. Caddy proxies each host to its dev server's port.</text>
+</svg>
