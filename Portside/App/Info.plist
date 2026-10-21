@@ -26,17 +26,17 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Portside asks for your administrator password once to install the DNS resolver for your chosen domain.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>MIT License</string>
-	<key>NSAppleEventsUsageDescription</key>
-	<string>Portside uses an administrator prompt once to install the .test DNS resolver.</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<false/>
 	<key>SUFeedURL</key>
 	<string>https://github.com/nicklasos/portside/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>REPLACE_WITH_SPARKLE_PUBLIC_ED_KEY</string>
-	<key>SUEnableInstallerLauncherService</key>
-	<false/>
-	<key>SUEnableAutomaticChecks</key>
-	<true/>
+	<string>EeXn6MOosQ6Eb356d1kzMu0Jdn4gFUQmZN8NspYCG6M=</string>
 </dict>
 </plist>

@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-21
+
 ### Added
 
 - Menu bar popover listing sites with status dots, start/stop, logs, open and a per-site menu.
