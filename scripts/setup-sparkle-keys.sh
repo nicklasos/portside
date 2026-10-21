@@ -14,10 +14,11 @@ fi
 "$bin/generate_keys" >/dev/null
 public_key=$("$bin/generate_keys" -p)
 
-tmp=$(mktemp)
-trap 'rm -f "$tmp"' EXIT
-"$bin/generate_keys" -x "$tmp"
-gh secret set SPARKLE_PRIVATE_KEY < "$tmp"
+# generate_keys -x refuses to overwrite, so export into a fresh directory, not a mktemp file.
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+"$bin/generate_keys" -x "$tmpdir/key"
+gh secret set SPARKLE_PRIVATE_KEY < "$tmpdir/key"
 
 /usr/libexec/PlistBuddy -c "Set :SUPublicEDKey $public_key" Portside/App/Info.plist
 
