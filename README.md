@@ -30,11 +30,7 @@
 
 1. Download `Portside-<version>.dmg` from the [latest release](https://github.com/nicklasos/portside/releases/latest).
 2. Open the disk image and drag **Portside** to **Applications**.
-3. Open Portside. macOS blocks the first launch, because Portside is a free project without a paid Apple Developer ID and is not notarized.
-   - On macOS 14, Control-click Portside in **Applications** and choose **Open**.
-   - On macOS 15 or later, open **System Settings > Privacy & Security** and click **Open Anyway** next to the Portside message.
-
-   You do this once. Updates install in place through Sparkle and do not ask again.
+3. Open Portside. macOS blocks the first launch, because Portside is a free project without a paid Apple Developer ID and is not notarized. Allow it once, as described in [First launch](#first-launch). Updates install in place through Sparkle and do not ask again.
 4. Choose your local domain. Portside lists `.localhost`, `.test`, `.loc`, `.local`, and a custom suffix, and shows what each one needs on your Mac. `.localhost` needs no setup and no password.
 
    Any other suffix needs one file, `/etc/resolver/<suffix>`, which tells macOS to send that suffix's lookups to Portside. Portside explains the file and waits for you to click **Install resolver**. Then macOS asks for your administrator password once. The resolver file is the only change outside your home folder.
@@ -44,6 +40,30 @@
 </p>
 
 A Homebrew cask is planned.
+
+### First launch
+
+macOS shows a warning the first time you open Portside, because the app is not notarized by Apple. You allow it once.
+
+**macOS 15 Sequoia and later**
+
+1. Open Portside from **Applications**. macOS says it could not verify that Portside is free of malware. Click **Done**.
+2. Open **System Settings > Privacy & Security** and scroll down to **Security**. Next to "Portside was blocked to protect your Mac", click **Open Anyway**.
+3. Click **Open Anyway** again in the dialog and confirm with your password or Touch ID.
+
+Portside starts, and macOS remembers your choice.
+
+**macOS 14 Sonoma**
+
+Control-click Portside in **Applications**, choose **Open**, then click **Open** in the dialog.
+
+**From Terminal, any version**
+
+If you prefer one command, remove the download quarantine flag and open the app normally:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Portside.app
+```
 
 ## Quick start
 
