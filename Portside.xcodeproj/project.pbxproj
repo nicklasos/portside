@@ -46,6 +46,7 @@
 		89BB45F7CC40E24CA5B79622 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A928D3FA53478440B6618289 /* Persistence.swift */; };
 		8BC98AF13555429397A3A33A /* PortChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BA43B38D3CC3FAA9B4F727 /* PortChecker.swift */; };
 		8EE0BF56870C58E33D7A6A75 /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = F9633B64B2ACF581E6B5A5A5 /* NIOPosix */; };
+		90B0F19D19646D4715769BAD /* RaiseAppWindows.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA8F48263EA40083CBF2FD60 /* RaiseAppWindows.swift */; };
 		9A11421AAF1FCAF49CFAD1FC /* SuffixCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F227F559FF348948BFE484A /* SuffixCheck.swift */; };
 		9A83B0E1E957DBA4D2A7E8CF /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = EDE65FD1F58D50D09639D599 /* Sparkle */; };
 		9BA732FE0EC57F64ECA64A59 /* AppPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD92124D73C1E797842E28D /* AppPaths.swift */; };
@@ -154,6 +155,7 @@
 		CDDD204E84FBA74747C50C60 /* UpdaterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterService.swift; sourceTree = "<group>"; };
 		CE7F056C6696C3BCD6DE74EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CF3E75E21F471F440D47239D /* caddy-all-8080.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-all-8080.json"; sourceTree = "<group>"; };
+		DA8F48263EA40083CBF2FD60 /* RaiseAppWindows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaiseAppWindows.swift; sourceTree = "<group>"; };
 		DB013570A77DEFBE17D837C2 /* Site.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Site.swift; sourceTree = "<group>"; };
 		E85D59499ADE758CD5C70BF4 /* PortsideControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortsideControllerTests.swift; sourceTree = "<group>"; };
 		E8FD2BCEC89B8AC649183F3C /* DomainSuffixPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainSuffixPicker.swift; sourceTree = "<group>"; };
@@ -201,6 +203,7 @@
 			children = (
 				044CCB785BFB4C254C9E1C41 /* MenuBarIcon.swift */,
 				365678D7E43493546B0296BE /* MenuBarView.swift */,
+				DA8F48263EA40083CBF2FD60 /* RaiseAppWindows.swift */,
 				3DDEAB6901C5B485AB7F34BF /* SiteRowView.swift */,
 				569D3B82FCEADAC5D817C283 /* StatusDot.swift */,
 			);
@@ -538,6 +541,7 @@
 				A1235826D8C832BBDF604019 /* ProcessEditorView.swift in Sources */,
 				53EA663864055AB67FD78163 /* ProcessManager.swift in Sources */,
 				700E3B06411E0BB6EDFBB5F4 /* ProxyManager.swift in Sources */,
+				90B0F19D19646D4715769BAD /* RaiseAppWindows.swift in Sources */,
 				6A4F12E844DA8DBE2FE9F9CC /* ResolverInstaller.swift in Sources */,
 				2609696D4CCF72DE957A8EF4 /* ResolverSetupView.swift in Sources */,
 				124DD8BE547EA9F7784D3C22 /* SettingsView.swift in Sources */,

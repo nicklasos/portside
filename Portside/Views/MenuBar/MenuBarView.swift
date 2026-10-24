@@ -17,6 +17,7 @@ struct MenuBarView: View {
             footer
         }
         .frame(width: 340)
+        .background(RaiseAppWindows())
     }
 
     private var header: some View {

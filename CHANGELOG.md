@@ -8,6 +8,10 @@ All notable changes to this project are documented here.
 
 - Per-site commands, such as a deploy, run from the site's … menu in the popover. The site editor has a **Commands** tab where each command gets a name, a shell line, a folder, and a **Show logs** switch. With **Show logs** on, the logs window opens on the command's tab. With it off, the command runs in the background and a notification says whether it finished or failed.
 
+### Fixed
+
+- Clicking the menu bar icon brings open Logs and Site windows back in front of other apps' windows, since a menu bar app has no ⌘Tab entry to reach them.
+
 ## [0.1.0] - 2026-10-21
 
 ### Added
