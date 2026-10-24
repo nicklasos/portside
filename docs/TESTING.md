@@ -10,7 +10,7 @@ Run the whole suite from the repository root:
 xcodebuild -project Portside.xcodeproj -scheme Portside -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
 ```
 
-This is the command CI runs in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). The suite has 116 tests, which run in about 20 seconds after the build. `grep -h "func test" PortsideTests/*.swift | wc -l` counts them. It needs no network, no administrator password, and no bundled Caddy. The process tests spawn real `/bin/zsh` processes, and the DNS tests bind UDP sockets on loopback.
+This is the command CI runs in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). The suite has 165 tests, which run in about 30 seconds after the build. `grep -h "func test" PortsideTests/*.swift | wc -l` counts them. It needs no network, no administrator password, and no bundled Caddy. The process tests spawn real `/bin/zsh` processes, and the DNS tests bind UDP sockets on loopback.
 
 To run one test class, add `-only-testing`:
 
@@ -125,6 +125,10 @@ These tests script the lookup and the HTTP request through `SuffixProbes`.
 | `testApplyRestartsOnlyChangedProcessesAndStopsRemovedOnes` | Editing a running site restarts only the changed processes. |
 | `testStaticSiteTogglesWithoutSpawningMain` | Starting a static site enables the folder without a process, starts extras that have a command, and leaves extras with a blank command stopped. |
 | `testBadWorkingDirectoryFails` | A missing working directory gives `failed`. |
+| `testCommandOutputIsCapturedAndFinishingReportsItsCodeNotACrash` | A site command's output lands in its buffer, and its exit code 0 or 2 reaches `onCommandFinished`, never `onUnexpectedExit`. |
+| `testCommandRunsInItsFolderWithTheSiteEnvironment` | A command runs in its own folder and gets `PORTSIDE`, `PORTSIDE_SITE`, and `PORTSIDE_URL` but no `PORT`. |
+| `testStoppingASiteLeavesItsRunningCommandAlive` | Stopping a site leaves its running command alive, and stopping the command reports no finish. |
+| `testApplyStopsARunningCommandThatWasRemoved` | Saving a site without a running command stops that command. |
 | `testRelaunchKillsGroupsLeftByACrashedRun` | A new `ProcessManager` kills the groups recorded in `pids.json` by a crashed run. |
 
 ### `PortsideControllerTests`
@@ -137,6 +141,9 @@ These tests script the lookup and the HTTP request through `SuffixProbes`.
 | `testSuffixChangeWhileRunningAsksForRestart` | A suffix change while a site runs sets the `PORTSIDE_URL` restart notice. |
 | `testOnlyPortsidesOwnLeftoverResolverIsOfferedForRemoval` | After a switch, only Portside's own file for the old suffix is offered for removal. |
 | `testSuffixSurvivesRelaunch` | The suffix and the onboarding flag persist. |
+| `testRunningACommandThatShowsLogsSelectsItsTab` | Running a command with **Show logs** selects its logs tab. A background command leaves the tab alone. |
+| `testSavingAStoppedSiteWithoutARunningCommandStopsIt` | Removing a running command from a stopped site stops it and gives no notice. |
+| `testDeletingASiteStopsItsCommands` | Deleting a site stops its running commands. |
 
 The other tests in this class cover start, stop, save, delete, and the menu bar status.
 
@@ -151,6 +158,9 @@ The other tests in this class cover start, stop, save, delete, and the menu bar 
 | `testRejectsMissingFolderBadPortAndDuplicateSubdomain` | A missing folder, a bad port, and a repeated subdomain block a save. |
 | `testSharedUpstreamIsWarningNotError` | Two processes on one `host:port` give a warning, not an error. |
 | `testDuplicateGetsFreshIdsAndName` | Duplicating a site gives new ids and a `-copy` name. |
+| `testSitesWithoutCommandsLoadAndCommandsRoundTrip` | A `sites.json` without `commands` loads, and saved commands survive a reload. |
+| `testDuplicateGivesCommandsFreshIds` | A duplicated site's commands get new ids. |
+| `testRejectsIncompleteAndDuplicateCommands` | A command without a name or command line, with a missing folder, or with a name used twice blocks a save. |
 | `testSanitizeLabel` | Name input is lowercased and stripped to `[a-z0-9-]`. |
 | `testSiteStatusDerivation` | `SiteStatus` follows from the process states. |
 
@@ -282,6 +292,14 @@ If the window says this Mac does not resolve `.localhost`, follow the `.test` st
 - [ ] Only the new API process starts. The Vite process keeps its pid, which the `▶` line in its log shows.
 - [ ] `curl -s http://api.blog.localhost/ | head -n 3` prints the directory listing from Python.
 - [ ] Find the API's pid in its log and run `kill <pid>`. The site's dot turns red, the API row shows the exit code, and a notification appears.
+
+### A site command
+
+- [ ] Edit the site and open the **Commands** tab. Add a command named `Deploy` with the command `echo "deploying $PORTSIDE_SITE"; sleep 5; echo done`. Save.
+- [ ] Open the site's … menu. `Deploy` sits between **Duplicate** and **Delete…**, with a divider on each side. Choose it. The popover closes and the logs window opens on a `Deploy` tab that prints `deploying blog`.
+- [ ] Open the … menu again within 5 seconds. The item reads **Stop Deploy**. Stop the site with the row's stop button. The command keeps running and prints `done`.
+- [ ] Turn **Show logs** off and save. Run `Deploy` again. No window opens, and after 5 seconds a notification says `blog · Deploy finished` with `done` as its text. Click **Show logs** on it. The logs window opens on the `Deploy` tab.
+- [ ] Change the command to `exit 3` and run it. The notification says `blog · Deploy failed with code 3`.
 
 ### Stopped and unknown sites
 

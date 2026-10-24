@@ -79,6 +79,14 @@ xattr -dr com.apple.quarantine /Applications/Portside.app
 
 Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each command. A command such as `npm run dev -- --port $PORT` stays in step with the port you entered. Leave the command empty to serve the folder as static files. A static site has a switch in the menu instead of start and stop buttons.
 
+## Commands
+
+A site can also hold commands that you run when you need them, such as a deploy or a database seed. Open the site editor and choose the **Commands** tab. Click **Add Command**, name it, such as `Deploy`, and enter the shell line, such as `make deploy && echo "ok"`. The command runs in the site folder unless you choose another folder.
+
+The site's … menu in the popover lists its commands. Choose one to run it. With **Show logs** on, the logs window opens on the command's tab. With it off, the command runs in the background, and a notification says whether it finished or failed. While a command runs, its menu item reads **Stop Deploy**. Stopping the site leaves a running command alone.
+
+Each command gets `PORTSIDE`, `PORTSIDE_SITE`, and `PORTSIDE_URL`, the site's main URL.
+
 ## How it works
 
 <p align="center">
@@ -101,7 +109,7 @@ Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each comm
   <img src="assets/screenshots/logs.png" width="720" alt="The logs window for blog with a tab for each process and colored Vite output">
 </p>
 
-Each site has a log window with one tab per process, main process first. The window keeps the last 10,000 lines of each process and renders ANSI colors. It scrolls with new output until you scroll up. From the toolbar you can start, stop, or restart one process, search, copy the output, and open the folder in Finder or Terminal. To keep logs on disk as well, turn on log mirroring in **Settings**. Portside then writes `~/Library/Logs/Portside/<site>/<process>.log`.
+Each site has a log window with one tab per process, main process first, then a tab for each command that ran since Portside started. The window keeps the last 10,000 lines of each process and renders ANSI colors. It scrolls with new output until you scroll up. From the toolbar you can start, stop, or restart one process, search, copy the output, and open the folder in Finder or Terminal. To keep logs on disk as well, turn on log mirroring in **Settings**. Portside then writes `~/Library/Logs/Portside/<site>/<process>.log`, and `<command>.log` for a command.
 
 ## FAQ
 
