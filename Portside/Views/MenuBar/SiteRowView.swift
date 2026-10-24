@@ -75,6 +75,19 @@ struct SiteRowView: View {
                 controller.duplicate(site)
                 dismiss()
             }
+            if !site.commands.isEmpty {
+                Divider()
+                ForEach(site.commands) { command in
+                    if controller.isRunning(command) {
+                        Button("Stop \(command.name)") { Task { await controller.stopCommand(command) } }
+                    } else {
+                        Button(command.name) {
+                            Task { await controller.run(command, in: site) }
+                            if command.showsLogs { dismiss() }
+                        }
+                    }
+                }
+            }
             Divider()
             Button("Delete…", role: .destructive) { confirmDelete() }
         } label: {
