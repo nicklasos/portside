@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02E63215D023907334722D81 /* CommandsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 455771B70DABAA90EBE97A36 /* CommandsEditorView.swift */; };
 		049E31B0EDD90D531D530215 /* SiteRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DDEAB6901C5B485AB7F34BF /* SiteRowView.swift */; };
 		0E221E60ED20BF1ACADA8B26 /* CommandDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80583E3DBCE3CCC37066F2FD /* CommandDetectorTests.swift */; };
 		0EA197175A575878CC6CBD14 /* SiteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDB27019664BB31F509D511 /* SiteEditorView.swift */; };
@@ -116,6 +117,7 @@
 		37BA43B38D3CC3FAA9B4F727 /* PortChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortChecker.swift; sourceTree = "<group>"; };
 		3911AE3EB1EF738961CCA63E /* ProcessManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessManagerTests.swift; sourceTree = "<group>"; };
 		3DDEAB6901C5B485AB7F34BF /* SiteRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteRowView.swift; sourceTree = "<group>"; };
+		455771B70DABAA90EBE97A36 /* CommandsEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandsEditorView.swift; sourceTree = "<group>"; };
 		48DC4E96D4C4F692BC8768E5 /* CaddyConfigBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaddyConfigBuilder.swift; sourceTree = "<group>"; };
 		528953F20C84B2F6EE055630 /* SuffixCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuffixCheckTests.swift; sourceTree = "<group>"; };
 		5368BA37278BFC07CACABE67 /* EnvPortDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvPortDetectorTests.swift; sourceTree = "<group>"; };
@@ -334,6 +336,7 @@
 		E5CE16905E4BBE4FF4D52F91 /* Editor */ = {
 			isa = PBXGroup;
 			children = (
+				455771B70DABAA90EBE97A36 /* CommandsEditorView.swift */,
 				6F4A7E868EE2795961567699 /* FolderAutofill.swift */,
 				8D85F66C6944538093A05308 /* FolderPicker.swift */,
 				3715245E27D23C61B1B4A557 /* ProcessEditorView.swift */,
@@ -510,6 +513,7 @@
 				47C726805EEA9501DBA19677 /* AppSettings.swift in Sources */,
 				DA44017B1516EEE78272853A /* CaddyConfigBuilder.swift in Sources */,
 				F853AA2C9F777289545982BE /* CommandDetector.swift in Sources */,
+				02E63215D023907334722D81 /* CommandsEditorView.swift in Sources */,
 				DF6BF6A7734522F2348B08CE /* DNSServer.swift in Sources */,
 				35C8770EB177C88392FACDBB /* DebugLaunch.swift in Sources */,
 				FD5664646C7870334E4E2912 /* DomainSuffix.swift in Sources */,

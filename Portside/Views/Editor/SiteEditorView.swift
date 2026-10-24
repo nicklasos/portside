@@ -20,6 +20,10 @@ struct SiteEditorWindow: View {
     }
 }
 
+private enum EditorTab: String {
+    case general, commands
+}
+
 struct SiteEditorView: View {
     let original: Site?
     @Environment(PortsideController.self) private var controller
@@ -33,6 +37,7 @@ struct SiteEditorView: View {
     @State private var scannedFolder: String
     @State private var envPort: DetectedPort?
     @State private var detectedCommand: DetectedCommand?
+    @State private var tab: EditorTab = .general
 
     private var maxFormHeight: CGFloat { (NSScreen.main?.visibleFrame.height ?? 800) - 120 }
 
@@ -45,6 +50,11 @@ struct SiteEditorView: View {
         ))
         _autofill = State(initialValue: original == nil ? .newSite(defaultPort: defaultPort) : FolderAutofill())
         _scannedFolder = State(initialValue: original?.folder ?? "")
+        #if DEBUG
+        if let raw = UserDefaults.standard.string(forKey: "PortsideEditorTab"), let tab = EditorTab(rawValue: raw) {
+            _tab = State(initialValue: tab)
+        }
+        #endif
     }
 
     var body: some View {
@@ -88,26 +98,50 @@ struct SiteEditorView: View {
 
     private func form(_ issues: [ValidationIssue]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(original == nil ? "New Site" : "Edit \(original!.name)")
-                .font(.title2.weight(.semibold))
-            siteFields(issues)
-            section("Main process")
-            ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues, envPort: envPort, detectedCommand: detectedCommand)
             HStack {
-                section("Additional processes")
-                Button {
-                    draft.extras.append(newExtra())
-                } label: {
-                    Label("Add", systemImage: "plus")
+                Text(original == nil ? "New Site" : "Edit \(original!.name)")
+                    .font(.title2.weight(.semibold))
+                Spacer()
+                Picker("", selection: $tab) {
+                    Text(tabLabel("General", for: .general, issues)).tag(EditorTab.general)
+                    Text(tabLabel(draft.commands.isEmpty ? "Commands" : "Commands (\(draft.commands.count))", for: .commands, issues)).tag(EditorTab.commands)
                 }
-                .controlSize(.small)
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
             }
-            ForEach($draft.extras) { $extra in
-                extraBox($extra, issues: issues)
+            switch tab {
+            case .general: generalForm(issues)
+            case .commands: CommandsEditorView(commands: $draft.commands, issues: issues)
             }
-            Toggle("Start automatically when Portside launches", isOn: $draft.autoStart)
         }
         .padding(.horizontal, 20).padding(.vertical, 16)
+    }
+
+    /// Marks the tab that is not showing when it holds an error that blocks Save.
+    private func tabLabel(_ title: String, for target: EditorTab, _ issues: [ValidationIssue]) -> String {
+        let hasError = issues.contains { $0.severity == .error && $0.field.isCommand == (target == .commands) }
+        return target != tab && hasError && hasEdits ? "\(title) ⚠︎" : title
+    }
+
+    @ViewBuilder
+    private func generalForm(_ issues: [ValidationIssue]) -> some View {
+        siteFields(issues)
+        section("Main process")
+        ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues, envPort: envPort, detectedCommand: detectedCommand)
+        HStack {
+            section("Additional processes")
+            Button {
+                draft.extras.append(newExtra())
+            } label: {
+                Label("Add", systemImage: "plus")
+            }
+            .controlSize(.small)
+        }
+        ForEach($draft.extras) { $extra in
+            extraBox($extra, issues: issues)
+        }
+        Toggle("Start automatically when Portside launches", isOn: $draft.autoStart)
     }
 
     private func siteFields(_ issues: [ValidationIssue]) -> some View {
