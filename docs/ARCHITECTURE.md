@@ -17,7 +17,7 @@ Each service owns one concern. The UI layer in [`Portside/App`](../Portside/App)
 | `AppSettings` | [`Store/AppSettings.swift`](../Portside/Store/AppSettings.swift) | Preferences in `UserDefaults`: domain suffix (`localhost`), whether the user has chosen it, proxy port (80), DNS port (35353), Caddy admin port (2019), crash notifications (on), and log mirroring to disk (off). **Reset to Defaults** keeps the domain suffix. |
 | `DomainSuffix` | [`Models/DomainSuffix.swift`](../Portside/Models/DomainSuffix.swift) | The top-level label every site lives under. The presets are `.localhost`, `.test`, `.loc`, and `.local`. `DomainSuffix.custom(_:)` validates a typed suffix and is the only other way to make one. |
 | `SiteValidation` | [`Models/SiteValidation.swift`](../Portside/Models/SiteValidation.swift) | The rules a site must pass. Errors block a save. A shared `host:port` is only a warning. |
-| `ProcessManager` | [`Services/ProcessManager.swift`](../Portside/Services/ProcessManager.swift) | The state of every process, the spawned groups, one `LogBuffer` per process, and the `pids.json` ledger. |
+| `ProcessManager` | [`Services/ProcessManager.swift`](../Portside/Services/ProcessManager.swift) | The state of every process and site command, the spawned groups, one `LogBuffer` for each, and the `pids.json` ledger. |
 | `ManagedProcess` | [`Services/ManagedProcess.swift`](../Portside/Services/ManagedProcess.swift) | One spawned `/bin/zsh -ilc <command>` from spawn until its leader is reaped and its output is drained. |
 | `Spawn` | [`Services/Spawn.swift`](../Portside/Services/Spawn.swift) | The `posix_spawn` call and the signals that stop a process group. |
 | `LogBuffer` | [`Services/LogBuffer.swift`](../Portside/Services/LogBuffer.swift) | A line ring buffer of 10,000 lines per process, with an optional mirror file. |
@@ -55,7 +55,7 @@ A resolver file decides the strategy on its own. Herd's `/etc/resolver/test` mak
 
 ### End-to-end check
 
-`EndToEndCheck.run` runs at launch, after a resolver install, and from **Test now** in Settings. It reports the first step that fails:
+`EndToEndCheck.run` runs at launch, after a resolver install, and from **Test Now** in Settings. It reports the first step that fails:
 
 1. DNS. `portside-selftest.<suffix>` must resolve to `127.0.0.53` under `portsideDNS`, which proves the answer came from Portside's server. Under `system`, it must resolve to loopback only.
 2. The proxy state. A port conflict names the owner. A stopped or failed Caddy says so.
@@ -164,15 +164,25 @@ The shell is an interactive login shell (`-ilc`). It reads `~/.zshenv`, `~/.zpro
 
 `Spawn.terminateGroup` sends `SIGTERM` to the whole group, polls every 50 ms for up to 5 seconds, then sends `SIGKILL` and waits up to 1 more second. `ProcessManager.stop(processID:)` marks the process `stopping` first, so the exit that follows is not reported as a crash. The log gets a `■ stopped` line.
 
-When a leader exits on its own, `ManagedProcess` reaps it and then terminates the rest of its group. A dev server that crashes must not leave a child holding its port. Remaining output has 500 ms to drain. Then `ProcessManager` records `exited(code)`, writes `■ exited with code N` to the log, and calls `onUnexpectedExit`.
+When a leader exits on its own, `ManagedProcess` reaps it and then terminates the rest of its group. A dev server that crashes must not leave a child holding its port. Remaining output has 500 ms to drain. Then `ProcessManager` records `exited(code)`, writes `■ exited with code N` to the log, and calls `onUnexpectedExit`. For a site command it calls `onCommandFinished` instead.
+
+### Site commands
+
+A `SiteCommand` is a named shell line that runs once on demand, such as a deploy. `ProcessManager.run(_:in:)` spawns it through the same path as a process, keyed by the command's id, so it gets a `LogBuffer`, a `pids.json` entry, and a stop on quit. A command goes straight to `running`, since there is no server to wait for. It gets `PORTSIDE`, `PORTSIDE_SITE`, `PORTSIDE_URL` for the site's main domain, `TERM`, and `FORCE_COLOR`, but no `PORT` or `HOST`. `stop(processID:)` stops it.
+
+Ending on its own is how a command is meant to end, so its exit never counts as a crash. `onCommandFinished` reports the code. The controller posts a notification for a command with **Show logs** off: `<site> · <name> finished` for code 0, or `failed with code N`, with the last line of output as the body. A command with **Show logs** on opens the logs window on its tab when it starts, so it needs no notification.
+
+`stop(_ site:)` stops processes only, so the row's stop button never kills a deploy halfway. Deleting a site stops its commands too.
 
 ### Edit a running site
 
-`ProcessManager.apply(edited:previous:)` compares each live process's `LaunchSpec`: command, working directory, and environment. It restarts only the processes whose spec changed and stops the processes that the edit removed. The port and host are in the environment, so changing either restarts the process. A new label or a toggled **Preserve Host header** leaves the spec equal and restarts nothing. The proxy picks those up on its next reload.
+`ProcessManager.apply(edited:previous:)` compares each live process's `LaunchSpec`: command, working directory, and environment. It restarts only the processes whose spec changed and stops the processes and running commands that the edit removed. The port and host are in the environment, so changing either restarts the process. A new label or a toggled **Preserve Host header** leaves the spec equal and restarts nothing. The proxy picks those up on its next reload.
 
 ### Logs
 
-`ManagedProcess` reads both pipes on its own serial queue and appends raw bytes to the process's `LogBuffer`. The buffer splits on `\n`, treats `\r\n` as one newline, keeps ANSI escapes for the log view to render, and holds a partial line until its newline arrives. A partial line that grows past 64 KiB becomes a line by itself. Past 10,000 lines, the oldest lines are dropped and counted. Portside adds its own lines, such as `▶ make dev (pid 4242)`, to the same buffer. With log mirroring on, every line is also appended to `~/Library/Logs/Portside/<site>/<label>.log`.
+`ManagedProcess` reads both pipes on its own serial queue and appends raw bytes to the process's `LogBuffer`. The buffer splits on `\n`, treats `\r\n` as one newline, keeps ANSI escapes for the log view to render, and holds a partial line until its newline arrives. A partial line that grows past 64 KiB becomes a line by itself. Past 10,000 lines, the oldest lines are dropped and counted. Portside adds its own lines, such as `▶ make dev (pid 4242)`, to the same buffer. With log mirroring on, every line is also appended to `~/Library/Logs/Portside/<site>/<label>.log`, or `<name>.log` for a command.
+
+The logs window has a tab for each process, then one for each command that has run this session, marked with a terminal symbol. `PortsideController.logTabs` holds each window's selected tab, so `show(.logs(site, tab:))` opens the window on a given tab. Running a command and a notification's **Show logs** action both use it. The tabs are toggles in a scope bar under the window toolbar, with the search field at its trailing end. The toolbar puts the selected tab's start, stop, restart, or run control at the leading edge. Open in Browser, Reveal in Finder, Open in Terminal, Follow, Clear, and Copy All sit at the trailing edge. The window subtitle shows the buffer's line count.
 
 The logs window renders only the newest 1,000 lines of a buffer. `LogWindow` picks them by absolute line number and tells `LogTextView` what to remove at the top, prepend, or append, so new output never re-renders the lines already shown. A bar above the text says how many lines are shown, loads 1,000 earlier lines per click up to the whole buffer, and counts the lines the buffer dropped. Search covers the shown lines. **Copy All** copies the whole buffer. `LogViewState` holds the shown limit and Follow, which is off by default. The pane opens at the newest line once its scroll view has a size. Follow pins the view there, and scrolling away turns it off. With Follow off, lines added or trimmed above the visible ones do not move them.
 

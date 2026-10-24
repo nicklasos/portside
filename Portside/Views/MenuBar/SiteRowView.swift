@@ -25,7 +25,7 @@ struct SiteRowView: View {
                 .help(domainsLine)
             }
             Spacer(minLength: 4)
-            HStack(spacing: 2) {
+            HStack(spacing: 0) {
                 primaryControl
                 IconButton("text.alignleft", help: "Logs") {
                     controller.show(.logs(site.id))
@@ -37,7 +37,7 @@ struct SiteRowView: View {
                 moreMenu
             }
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, MenuBarView.contentInset - MenuBarView.rowInset)
         .padding(.vertical, 6)
         .background(RoundedRectangle(cornerRadius: 6).fill(hovering ? Color.primary.opacity(0.07) : .clear))
         .contentShape(Rectangle())
@@ -57,9 +57,9 @@ struct SiteRowView: View {
             .help("Static site, served from the folder")
             .padding(.trailing, 4)
         } else if controller.isAnyProcessAlive(site) {
-            IconButton("stop.fill", help: "Stop") { Task { await controller.stop(site) } }
+            IconButton("stop.circle", help: "Stop") { Task { await controller.stop(site) } }
         } else {
-            IconButton("play.fill", help: "Start") { Task { await controller.start(site) } }
+            IconButton("play.circle", help: "Start") { Task { await controller.start(site) } }
         }
     }
 
@@ -75,11 +75,24 @@ struct SiteRowView: View {
                 controller.duplicate(site)
                 dismiss()
             }
+            if !site.commands.isEmpty {
+                Divider()
+                ForEach(site.commands) { command in
+                    if controller.isRunning(command) {
+                        Button("Stop \(command.name)") { Task { await controller.stopCommand(command) } }
+                    } else {
+                        Button(command.name) {
+                            Task { await controller.run(command, in: site) }
+                            if command.showsLogs { dismiss() }
+                        }
+                    }
+                }
+            }
             Divider()
             Button("Delete…", role: .destructive) { confirmDelete() }
         } label: {
             Image(systemName: "ellipsis")
-                .frame(width: 22, height: 22)
+                .frame(width: IconButton.size, height: IconButton.size)
                 .contentShape(Rectangle())
         }
         .menuStyle(.borderlessButton)
@@ -124,6 +137,8 @@ struct IconButton: View {
     let action: () -> Void
     @State private var hovering = false
 
+    static let size: CGFloat = 24
+
     init(_ systemName: String, help: String, action: @escaping () -> Void) {
         self.systemName = systemName
         self.help = help
@@ -133,8 +148,8 @@ struct IconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 12, weight: .medium))
-                .frame(width: 22, height: 22)
+                .font(.system(size: 13))
+                .frame(width: Self.size, height: Self.size)
                 .background(RoundedRectangle(cornerRadius: 5).fill(hovering ? Color.primary.opacity(0.1) : .clear))
                 .contentShape(Rectangle())
         }

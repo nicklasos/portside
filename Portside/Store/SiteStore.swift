@@ -52,6 +52,7 @@ final class SiteStore {
         copy.name = name
         copy.main.id = .init()
         copy.extras = copy.extras.map { var p = $0; p.id = .init(); return p }
+        copy.commands = copy.commands.map { var c = $0; c.id = .init(); return c }
         copy.autoStart = false
         sites.append(copy)
         try persist()

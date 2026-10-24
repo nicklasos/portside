@@ -20,6 +20,10 @@ struct SiteEditorWindow: View {
     }
 }
 
+private enum EditorTab: String {
+    case general, commands
+}
+
 struct SiteEditorView: View {
     let original: Site?
     @Environment(PortsideController.self) private var controller
@@ -33,6 +37,8 @@ struct SiteEditorView: View {
     @State private var scannedFolder: String
     @State private var envPort: DetectedPort?
     @State private var detectedCommand: DetectedCommand?
+    @State private var tab: EditorTab = .general
+    @FocusState private var nameFocused: Bool
 
     private var maxFormHeight: CGFloat { (NSScreen.main?.visibleFrame.height ?? 800) - 120 }
 
@@ -45,22 +51,28 @@ struct SiteEditorView: View {
         ))
         _autofill = State(initialValue: original == nil ? .newSite(defaultPort: defaultPort) : FolderAutofill())
         _scannedFolder = State(initialValue: original?.folder ?? "")
+        #if DEBUG
+        if let raw = UserDefaults.standard.string(forKey: "PortsideEditorTab"), let tab = EditorTab(rawValue: raw) {
+            _tab = State(initialValue: tab)
+        }
+        #endif
     }
 
     var body: some View {
         let issues = controller.store.issues(for: draft)
         VStack(alignment: .leading, spacing: 0) {
             // The window grows with the site and only scrolls once the form no longer fits on screen.
-            if formHeight > maxFormHeight {
-                ScrollView { measuredForm(issues) }
-                    .frame(height: maxFormHeight)
-            } else {
-                measuredForm(issues)
-            }
+            // The form is always in a scroll view: the titlebar draws its separator line only when no
+            // scroll view sits under it, so swapping one in for tall forms showed the line on one tab only.
+            ScrollView { measuredForm(issues) }
+                .scrollBounceBehavior(.basedOnSize)
+                .frame(height: min(formHeight, maxFormHeight))
             Divider()
             footer(issues)
         }
         .frame(width: 600)
+        // Without this the segmented control above the form takes the first focus when keyboard navigation is on.
+        .task { nameFocused = tab == .general }
         .navigationTitle(original == nil ? "New Site" : "\(original!.name) — Edit")
         .task(id: draft.folder) {
             guard draft.folder != scannedFolder else { return }
@@ -87,38 +99,69 @@ struct SiteEditorView: View {
     }
 
     private func form(_ issues: [ValidationIssue]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(original == nil ? "New Site" : "Edit \(original!.name)")
-                .font(.title2.weight(.semibold))
-            siteFields(issues)
-            section("Main process")
-            ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues, envPort: envPort, detectedCommand: detectedCommand)
-            HStack {
+        VStack(alignment: .leading, spacing: 20) {
+            Picker("", selection: $tab) {
+                Text(tabLabel("General", for: .general, issues)).tag(EditorTab.general)
+                Text(tabLabel(draft.commands.isEmpty ? "Commands" : "Commands (\(draft.commands.count))", for: .commands, issues)).tag(EditorTab.commands)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .fixedSize()
+            .frame(maxWidth: .infinity)
+            switch tab {
+            case .general: generalForm(issues)
+            case .commands: CommandsEditorView(commands: $draft.commands, issues: issues)
+            }
+        }
+        .padding(20)
+    }
+
+    /// Marks the tab that is not showing when it holds an error that blocks Save.
+    private func tabLabel(_ title: String, for target: EditorTab, _ issues: [ValidationIssue]) -> String {
+        let hasError = issues.contains { $0.severity == .error && $0.field.isCommand == (target == .commands) }
+        return target != tab && hasError && hasEdits ? "\(title) ⚠︎" : title
+    }
+
+    private func generalForm(_ issues: [ValidationIssue]) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 8) {
+                siteFields(issues)
+                Toggle("Start automatically when Portside launches", isOn: $draft.autoStart)
+                    .padding(.leading, EditorLayout.labelWidth + EditorLayout.labelSpacing)
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                section("Main process")
+                ProcessEditorView(process: $draft.main, site: draft, isMain: true, issues: issues, envPort: envPort, detectedCommand: detectedCommand)
+            }
+            VStack(alignment: .leading, spacing: 12) {
                 section("Additional processes")
+                ForEach($draft.extras) { $extra in
+                    ProcessEditorView(process: $extra, site: draft, isMain: false, issues: issues, labelWidth: EditorLayout.boxedLabelWidth) {
+                        draft.extras.removeAll { $0.id == extra.id }
+                    }
+                    .editorBox()
+                }
                 Button {
                     draft.extras.append(newExtra())
                 } label: {
-                    Label("Add", systemImage: "plus")
+                    Label("Add Process", systemImage: "plus")
                 }
-                .controlSize(.small)
+                .buttonStyle(.borderless)
+                .foregroundStyle(.tint)
             }
-            ForEach($draft.extras) { $extra in
-                extraBox($extra, issues: issues)
-            }
-            Toggle("Start automatically when Portside launches", isOn: $draft.autoStart)
         }
-        .padding(.horizontal, 20).padding(.vertical, 16)
     }
 
     private func siteFields(_ issues: [ValidationIssue]) -> some View {
-        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 8, verticalSpacing: 6) {
+        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: EditorLayout.labelSpacing, verticalSpacing: 6) {
             GridRow {
-                Text("Name").frame(width: 70, alignment: .trailing).gridColumnAlignment(.trailing)
+                Text("Name").frame(width: EditorLayout.labelWidth, alignment: .trailing).gridColumnAlignment(.trailing)
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
                         TextField("", text: name, prompt: Text("blog"))
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 220)
+                            .focused($nameFocused)
                         Text(controller.settings.domainSuffix.display).foregroundStyle(.secondary)
                         Spacer()
                         Button {
@@ -134,7 +177,7 @@ struct SiteEditorView: View {
                 }
             }
             GridRow {
-                Text("Folder").frame(width: 70, alignment: .trailing)
+                Text("Folder").frame(width: EditorLayout.labelWidth, alignment: .trailing)
                 FolderPicker(
                     path: $draft.folder,
                     placeholder: "~/Projects/blog",
@@ -162,20 +205,6 @@ struct SiteEditorView: View {
         autofill = autofill.apply(folder: expanded, detected: detected, command: command, to: &draft)
         envPort = detected
         detectedCommand = command
-    }
-
-    private func extraBox(_ extra: Binding<ProcessConfig>, issues: [ValidationIssue]) -> some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            Button("Remove", role: .destructive) {
-                draft.extras.removeAll { $0.id == extra.wrappedValue.id }
-            }
-            .controlSize(.small)
-            ProcessEditorView(process: extra, site: draft, isMain: false, issues: issues)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(10)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.04)))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.1)))
     }
 
     private func section(_ title: String) -> some View {
@@ -209,7 +238,7 @@ struct SiteEditorView: View {
                 .disabled(issues.contains { $0.severity == .error } || isSaving || !hasEdits)
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .padding(.vertical, 16)
     }
 
     private var hasEdits: Bool {

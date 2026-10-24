@@ -10,6 +10,8 @@ final class ProcessManager {
     private var staticMains: [Site.ID: ProcessConfig.ID] = [:]
 
     @ObservationIgnored var onUnexpectedExit: ((_ site: Site.ID, _ process: ProcessConfig.ID, _ code: Int32) -> Void)?
+    /// A command ending on its own, which is how a command is expected to end.
+    @ObservationIgnored var onCommandFinished: ((_ site: Site.ID, _ command: SiteCommand.ID, _ code: Int32) -> Void)?
 
     /// A spawned group Portside owns. Leaving `.live` is what marks an exit as requested.
     private enum Child {
@@ -25,6 +27,8 @@ final class ProcessManager {
 
     @ObservationIgnored private var children: [ProcessConfig.ID: Child] = [:]
     @ObservationIgnored private var buffers: [ProcessConfig.ID: LogBuffer] = [:]
+    /// Ids in `children` that are site commands rather than processes, so their exit is not a crash.
+    @ObservationIgnored private var commandIDs: Set<SiteCommand.ID> = []
     @ObservationIgnored private let ledger: GroupLedger
     @ObservationIgnored private let settings: AppSettings
 
@@ -54,6 +58,11 @@ final class ProcessManager {
         return buffer
     }
 
+    /// Whether the process or command has run or logged anything this session.
+    func hasRun(_ id: UUID) -> Bool {
+        states[id] != nil || buffers[id] != nil
+    }
+
     func start(_ site: Site) async {
         let idle = site.processes.filter { !state(of: $0.id).isAlive && children[$0.id] == nil }
         if site.isStatic, idle.contains(where: { $0.id == site.main.id }) { enableStatic(site) }
@@ -62,7 +71,7 @@ final class ProcessManager {
         for (i, p) in spawnable.enumerated() {
             if i > 0 { try? await Task.sleep(for: Self.stagger) }
             guard states[p.id] == .starting, children[p.id] == nil else { continue }
-            launch(p, in: site)
+            launch(p.id, spec: launchSpec(for: p, in: site), mirror: mirrorURL(named: p.label.isEmpty ? p.id.uuidString : p.label, in: site), site: site.id)
         }
     }
 
@@ -78,7 +87,17 @@ final class ProcessManager {
             return
         }
         states[process.id] = .starting
-        launch(process, in: site)
+        launch(process.id, spec: launchSpec(for: process, in: site), mirror: mirrorURL(named: process.label.isEmpty ? process.id.uuidString : process.label, in: site), site: site.id)
+    }
+
+    /// Runs a site command once. Stopping it goes through `stop(processID:)`.
+    func run(_ command: SiteCommand, in site: Site) async {
+        if case .stopping(_, let task) = children[command.id] { await task.value }
+        guard !state(of: command.id).isAlive, children[command.id] == nil else { return }
+        commandIDs.insert(command.id)
+        // A command has no readiness to wait for, so it skips `.starting`.
+        states[command.id] = .running
+        launch(command.id, spec: launchSpec(for: command, in: site), mirror: mirrorURL(named: command.name, in: site), site: site.id)
     }
 
     func stop(processID id: ProcessConfig.ID) async {
@@ -109,13 +128,14 @@ final class ProcessManager {
     }
 
     func apply(edited new: Site, previous old: Site) async -> [String] {
-        let removed = old.processes.filter { p in !new.processes.contains { $0.id == p.id } }
+        let kept = Set(new.processes.map(\.id) + new.commands.map(\.id))
+        let removed = (old.processes.map(\.id) + old.commands.map(\.id)).filter { !kept.contains($0) }
         let changed = new.processes.filter { p in
             guard state(of: p.id).isAlive, let before = old.processes.first(where: { $0.id == p.id }) else { return false }
             return launchSpec(for: before, in: old) != launchSpec(for: p, in: new)
         }
         await withTaskGroup(of: Void.self) { group in
-            for p in removed { group.addTask { await self.stop(processID: p.id) } }
+            for id in removed { group.addTask { await self.stop(processID: id) } }
             for p in changed { group.addTask { await self.restart(p, in: new) } }
         }
         return changed.map { $0.label.isEmpty ? $0.command : $0.label }
@@ -136,18 +156,17 @@ final class ProcessManager {
         staticMains[site.id] = site.main.id
     }
 
-    private func launch(_ config: ProcessConfig, in site: Site) {
-        let id = config.id
+    private func launch(_ id: UUID, spec: LaunchSpec, mirror: URL, site: Site.ID) {
         let buffer = buffer(for: id)
-        buffer.mirror(to: settings.mirrorLogsToDisk ? mirrorURL(for: config, in: site) : nil)
+        buffer.mirror(to: settings.mirrorLogsToDisk ? mirror : nil)
         let process: ManagedProcess
         do {
-            process = try ManagedProcess(spec: launchSpec(for: config, in: site), buffer: buffer) { [weak self] process, code in
-                Task { @MainActor in self?.processExited(process, code: code, id: id, site: site.id) }
+            process = try ManagedProcess(spec: spec, buffer: buffer) { [weak self] process, code in
+                Task { @MainActor in self?.processExited(process, code: code, id: id, site: site) }
             }
         } catch {
             states[id] = .failed("\(error)")
-            buffer.appendSystem("■ could not start \(config.command): \(error)")
+            buffer.appendSystem("■ could not start \(spec.command): \(error)")
             return
         }
         children[id] = .live(process)
@@ -158,7 +177,7 @@ final class ProcessManager {
         }
     }
 
-    private func processExited(_ process: ManagedProcess, code: Int32, id: ProcessConfig.ID, site: Site.ID) {
+    private func processExited(_ process: ManagedProcess, code: Int32, id: UUID, site: Site.ID) {
         guard case .live(let p) = children[id], p === process else { return }
         children[id] = nil
         states[id] = .exited(code: code)
@@ -167,7 +186,11 @@ final class ProcessManager {
             await process.terminate()
             ledger.remove(process.pid)
         }
-        onUnexpectedExit?(site, id, code)
+        if commandIDs.contains(id) {
+            onCommandFinished?(site, id, code)
+        } else {
+            onUnexpectedExit?(site, id, code)
+        }
     }
 
     private func launchSpec(for p: ProcessConfig, in site: Site) -> LaunchSpec {
@@ -184,9 +207,20 @@ final class ProcessManager {
         return LaunchSpec(command: p.command, workingDirectory: site.workingDirectory(for: p), environment: env)
     }
 
-    private func mirrorURL(for p: ProcessConfig, in site: Site) -> URL {
-        let name = p.label.isEmpty ? p.id.uuidString : p.label.replacingOccurrences(of: "/", with: "-")
-        return AppPaths.logsDirectory.appendingPathComponent(site.name, isDirectory: true).appendingPathComponent("\(name).log")
+    private func launchSpec(for c: SiteCommand, in site: Site) -> LaunchSpec {
+        let env = [
+            "PORTSIDE": "1",
+            "PORTSIDE_SITE": site.name,
+            "PORTSIDE_URL": settings.url(forDomain: site.domain(in: settings.domainSuffix)).absoluteString,
+            "TERM": "xterm-256color",
+            "FORCE_COLOR": "1",
+        ]
+        return LaunchSpec(command: c.command, workingDirectory: site.workingDirectory(for: c), environment: env)
+    }
+
+    private func mirrorURL(named name: String, in site: Site) -> URL {
+        AppPaths.logsDirectory.appendingPathComponent(site.name, isDirectory: true)
+            .appendingPathComponent("\(name.replacingOccurrences(of: "/", with: "-")).log")
     }
 }
 

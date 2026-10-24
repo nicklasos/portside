@@ -8,10 +8,10 @@ struct ProcessEditorView: View {
     let issues: [ValidationIssue]
     var envPort: DetectedPort? = nil
     var detectedCommand: DetectedCommand? = nil
+    var labelWidth = EditorLayout.labelWidth
+    var onRemove: (() -> Void)? = nil
     @Environment(PortsideController.self) private var controller
     @State private var showsAdvanced = false
-
-    private static let labelWidth: CGFloat = 70
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -30,13 +30,13 @@ struct ProcessEditorView: View {
                 }
                 .font(.system(size: 11))
             }
-            .padding(.leading, Self.labelWidth + 8)
+            .padding(.leading, labelWidth + EditorLayout.labelSpacing)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var fields: some View {
-        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 8, verticalSpacing: 6) {
+        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: EditorLayout.labelSpacing, verticalSpacing: 6) {
             GridRow {
                 label("Label")
                 HStack(spacing: 8) {
@@ -54,6 +54,9 @@ struct ProcessEditorView: View {
                             .fixedSize()
                     }
                     Spacer(minLength: 0)
+                    if let onRemove {
+                        RemoveButton(help: "Remove Process", action: onRemove)
+                    }
                 }
             }
             if let message = message(for: .subdomain(process.id)) {
@@ -139,7 +142,7 @@ struct ProcessEditorView: View {
 
     private func label(_ text: String) -> some View {
         Text(text)
-            .frame(width: Self.labelWidth, alignment: .trailing)
+            .frame(width: labelWidth, alignment: .trailing)
             .gridColumnAlignment(.trailing)
     }
 

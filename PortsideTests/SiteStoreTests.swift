@@ -97,6 +97,51 @@ final class SiteStoreTests: XCTestCase {
         XCTAssertEqual(store.sites.count, 2)
     }
 
+    func testSitesWithoutCommandsLoadAndCommandsRoundTrip() throws {
+        let json = """
+        {"version": 1, "sites": [{"name": "blog", "folder": "/tmp", "main": {"port": 4000, "command": "make dev"}}]}
+        """
+        try json.data(using: .utf8)!.write(to: dir.appendingPathComponent("sites.json"))
+        let store = makeStore()
+        var site = try XCTUnwrap(store.sites.first)
+        XCTAssertEqual(site.commands, [])
+
+        site.commands = [
+            SiteCommand(name: "Deploy", command: "make deploy && echo ok", workingDirectory: dir.path, showsLogs: false),
+            SiteCommand(name: "Seed", command: "make seed"),
+        ]
+        try store.upsert(site)
+        XCTAssertEqual(makeStore().sites.first?.commands, site.commands)
+    }
+
+    func testDuplicateGivesCommandsFreshIds() throws {
+        let store = makeStore()
+        var site = makeSite()
+        site.commands = [SiteCommand(name: "Deploy", command: "make deploy")]
+        try store.upsert(site)
+        let copy = try XCTUnwrap(store.duplicate(id: site.id))
+        XCTAssertEqual(copy.commands.map(\.name), ["Deploy"])
+        XCTAssertNotEqual(copy.commands.first?.id, site.commands.first?.id)
+    }
+
+    func testRejectsIncompleteAndDuplicateCommands() {
+        let store = makeStore()
+        var site = makeSite()
+        let unnamed = SiteCommand(name: " ", command: "make deploy")
+        let empty = SiteCommand(name: "Deploy", command: "  ")
+        let lost = SiteCommand(name: "Seed", command: "make seed", workingDirectory: "/definitely/not/here")
+        let twin = SiteCommand(name: "Deploy", command: "make deploy")
+        site.commands = [unnamed, empty, lost, twin]
+        let errors = store.issues(for: site).filter { $0.severity == .error }
+        func message(_ field: SiteField) -> String? { errors.first { $0.field == field }?.message }
+        XCTAssertEqual(message(.commandName(unnamed.id)), "Name is required")
+        XCTAssertEqual(message(.commandLine(empty.id)), "Command is required")
+        XCTAssertEqual(message(.commandDirectory(lost.id)), "Folder does not exist")
+        XCTAssertEqual(message(.commandName(twin.id)), "Another command is named Deploy")
+        XCTAssertNil(message(.commandName(empty.id)), "the first Deploy was flagged as a duplicate")
+        XCTAssertThrowsError(try store.upsert(site))
+    }
+
     func testSanitizeLabel() {
         XCTAssertEqual(SiteValidation.sanitizeLabel("My CRM_2!"), "mycrm2")
     }

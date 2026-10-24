@@ -1,21 +1,46 @@
 import AppKit
 import SwiftUI
 
+/// One tab of a site's logs window: a configured process, or a command that has run this session.
+private enum LogTab: Identifiable {
+    case process(ProcessConfig)
+    case command(SiteCommand)
+
+    var id: UUID {
+        switch self {
+        case .process(let p): p.id
+        case .command(let c): c.id
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .process(let p): p.label.isEmpty ? p.command : p.label
+        case .command(let c): c.name
+        }
+    }
+
+    func workingDirectory(in site: Site) -> String {
+        switch self {
+        case .process(let p): site.workingDirectory(for: p)
+        case .command(let c): site.workingDirectory(for: c)
+        }
+    }
+}
+
 struct LogsWindow: View {
     let siteID: Site.ID
     @Environment(PortsideController.self) private var controller
-    @State private var selection: ProcessConfig.ID?
 
     var body: some View {
         Group {
             if let site = controller.store.site(id: siteID) {
-                let current = site.processes.first { $0.id == selection } ?? site.main
-                VStack(spacing: 0) {
-                    tabStrip(site, selected: current.id)
-                    Divider()
-                    LogPane(site: site, process: current)
-                        .id(current.id)
+                let tabs = site.processes.map(LogTab.process) + site.commands.filter { controller.processes.hasRun($0.id) }.map(LogTab.command)
+                let current = tabs.first { $0.id == controller.logTabs[siteID] } ?? tabs[0]
+                LogPane(site: site, tab: current) {
+                    tabStrip(tabs, in: site, selected: current.id)
                 }
+                .id(current.id)
                 .navigationTitle("\(site.name) — Logs")
             } else {
                 Text("This site no longer exists.")
@@ -27,42 +52,38 @@ struct LogsWindow: View {
         .background(WindowFrameAutosave(name: "PortsideLogs-\(siteID.uuidString)"))
     }
 
-    private func tabStrip(_ site: Site, selected: ProcessConfig.ID) -> some View {
+    /// One recessed toggle per process or command, with its status dot, as in a scope bar.
+    private func tabStrip(_ tabs: [LogTab], in site: Site, selected: UUID) -> some View {
         HStack(spacing: 4) {
-            ForEach(site.processes) { process in
-                let isSelected = process.id == selected
-                Button {
-                    selection = process.id
-                } label: {
+            ForEach(tabs) { tab in
+                Toggle(isOn: Binding(get: { tab.id == selected }, set: { if $0 { controller.logTabs[siteID] = tab.id } })) {
                     HStack(spacing: 6) {
-                        StatusDot(controller.processes.state(of: process.id), size: 7)
-                        Text(tabTitle(process, in: site))
-                            .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                        StatusDot(controller.processes.state(of: tab.id), size: 7)
+                        if case .command = tab {
+                            Image(systemName: "terminal")
+                        }
+                        Text(tabTitle(tab, in: site))
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(isSelected ? Color.primary.opacity(0.1) : .clear))
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                .help(controller.processes.state(of: process.id).summary)
+                .toggleStyle(.button)
+                .help(controller.processes.state(of: tab.id).summary)
             }
-            Spacer()
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .buttonStyle(.accessoryBar)
     }
 
-    private func tabTitle(_ process: ProcessConfig, in site: Site) -> String {
+    private func tabTitle(_ tab: LogTab, in site: Site) -> String {
+        guard case .process(let process) = tab else { return tab.name }
         if !process.label.isEmpty { return process.label }
         if process.isStatic, process.id == site.main.id { return "Access log" }
         return process.command
     }
 }
 
-private struct LogPane: View {
+private struct LogPane<Tabs: View>: View {
     let site: Site
-    let process: ProcessConfig
+    let tab: LogTab
+    @ViewBuilder let tabs: Tabs
     @Environment(PortsideController.self) private var controller
     @State private var view = LogViewState()
     @State private var query = ""
@@ -71,11 +92,14 @@ private struct LogPane: View {
     @State private var accessLog: AccessLogTail?
     @FocusState private var searchFocused: Bool
 
-    private var isStaticMain: Bool { process.isStatic && process.id == site.main.id }
+    private var isStaticMain: Bool {
+        guard case .process(let process) = tab else { return false }
+        return process.isStatic && process.id == site.main.id
+    }
 
     private var buffer: LogBuffer {
         if isStaticMain, let accessLog { return accessLog.buffer }
-        return controller.processes.buffer(for: process.id)
+        return controller.processes.buffer(for: tab.id)
     }
 
     var body: some View {
@@ -84,13 +108,27 @@ private struct LogPane: View {
         let _ = buffer.revision
         let window = LogWindow(snapshot: snapshot, limit: view.shownLimit)
         VStack(spacing: 0) {
-            toolbar(lineCount: snapshot.lines.count)
+            // A scope bar: the tabs, and the search that applies to the selected one.
+            HStack(spacing: 8) {
+                tabs
+                Spacer(minLength: 8)
+                searchField
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
             Divider()
             if window.hidden > 0 || window.dropped > 0 {
                 notShownBar(window, bufferCount: snapshot.lines.count)
             }
             LogTextView(buffer: buffer, state: $view, query: query, findNextToken: findNextToken) { matchCount = $0 }
         }
+        .background {
+            Button("Find") { searchFocused = true }
+                .keyboardShortcut("f")
+                .hidden()
+        }
+        .toolbar { toolbar }
+        .navigationSubtitle(snapshot.lines.count == 1 ? "1 line" : "\(snapshot.lines.count.formatted()) lines")
         .onAppear {
             guard isStaticMain, accessLog == nil else { return }
             let tail = AccessLogTail(file: CaddyConfigBuilder.accessLogFile(siteName: site.name, in: controller.configuration.logsDirectory))
@@ -104,6 +142,7 @@ private struct LogPane: View {
             case "follow": view.follow.toggle()
             case "earlier": view.showEarlier(than: window)
             case "clear": clear()
+            case "find": searchFocused = true
             default: break
             }
         }
@@ -134,78 +173,86 @@ private struct LogPane: View {
         .background(Color(nsColor: LogTextView.background))
     }
 
-    private func toolbar(lineCount: Int) -> some View {
-        let state = controller.processes.state(of: process.id)
-        return HStack(spacing: 2) {
-            if state.isAlive {
-                IconButton("stop.fill", help: isStaticMain ? "Stop serving" : "Stop \(name)") {
-                    Task { await controller.stop(process) }
-                }
-                if !process.isStatic {
-                    IconButton("arrow.clockwise", help: "Restart \(name)") {
-                        Task { await controller.restart(process, in: site) }
-                    }
-                }
-            } else {
-                IconButton("play.fill", help: isStaticMain ? "Serve folder" : "Start \(name)") {
-                    Task { await controller.start(process, in: site) }
-                }
-                .disabled(process.isStatic && !isStaticMain)
+    @ToolbarContentBuilder
+    private var toolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .navigation) {
+            switch tab {
+            case .process(let process): processControls(process)
+            case .command(let command): commandControls(command)
             }
-            Divider().frame(height: 16).padding(.horizontal, 4)
-            if let url = controller.url(for: site, process: process) {
-                IconButton("safari", help: "Open \(url.absoluteString)") { controller.openURL(site, process: process) }
+        }
+        ToolbarItemGroup {
+            if case .process(let process) = tab, let url = controller.url(for: site, process: process) {
+                toolbarButton("Open in Browser", systemImage: "safari", help: "Open \(url.absoluteString)") { controller.openURL(site, process: process) }
             }
-            IconButton("folder", help: "Reveal folder in Finder") { controller.openFolder(site.workingDirectory(for: process)) }
-            IconButton("terminal", help: "Open in Terminal") { controller.openInTerminal(site.workingDirectory(for: process)) }
-
-            Spacer(minLength: 8)
-
-            searchField
+            toolbarButton("Reveal in Finder", systemImage: "folder", help: "Reveal folder in Finder") { controller.openFolder(tab.workingDirectory(in: site)) }
+            toolbarButton("Open in Terminal", systemImage: "terminal", help: "Open in Terminal") { controller.openInTerminal(tab.workingDirectory(in: site)) }
+        }
+        ToolbarItemGroup {
             Toggle(isOn: $view.follow) {
                 Label("Follow", systemImage: "arrow.down.to.line")
             }
-            .toggleStyle(.button)
-            .controlSize(.small)
             .help("Keep scrolling to the newest line")
-            Button("Clear", action: clear)
-                .controlSize(.small)
-            Button("Copy All", action: copyAll)
-                .controlSize(.small)
-            Text("\(lineCount.formatted()) lines")
-                .font(.system(size: 11).monospacedDigit())
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(Capsule().fill(Color.primary.opacity(0.08)))
-                .padding(.leading, 4)
+            toolbarButton("Clear", systemImage: "trash", help: "Clear the log", action: clear)
+            toolbarButton("Copy All", systemImage: "doc.on.doc", help: "Copy the whole log", action: copyAll)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
+    }
+
+    private func toolbarButton(_ title: String, systemImage: String, help: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+        }
+        .help(help)
+    }
+
+    @ViewBuilder
+    private func processControls(_ process: ProcessConfig) -> some View {
+        if controller.processes.state(of: process.id).isAlive {
+            toolbarButton("Stop", systemImage: "stop.fill", help: isStaticMain ? "Stop serving" : "Stop \(tab.name)") {
+                Task { await controller.stop(process) }
+            }
+            if !process.isStatic {
+                toolbarButton("Restart", systemImage: "arrow.clockwise", help: "Restart \(tab.name)") {
+                    Task { await controller.restart(process, in: site) }
+                }
+            }
+        } else {
+            toolbarButton("Start", systemImage: "play.fill", help: isStaticMain ? "Serve folder" : "Start \(tab.name)") {
+                Task { await controller.start(process, in: site) }
+            }
+            .disabled(process.isStatic && !isStaticMain)
+        }
+    }
+
+    @ViewBuilder
+    private func commandControls(_ command: SiteCommand) -> some View {
+        if controller.isRunning(command) {
+            toolbarButton("Stop", systemImage: "stop.fill", help: "Stop \(command.name)") {
+                Task { await controller.stopCommand(command) }
+            }
+        } else {
+            toolbarButton("Run", systemImage: "play.fill", help: "Run \(command.name)") {
+                Task { await controller.run(command, in: site) }
+            }
+        }
     }
 
     private var searchField: some View {
-        HStack(spacing: 4) {
-            TextField("Search shown lines", text: $query)
-                .textFieldStyle(.roundedBorder)
-                .controlSize(.small)
-                .frame(width: 150)
-                .focused($searchFocused)
-                .onSubmit { findNextToken += 1 }
-            if !query.isEmpty {
-                Text("\(matchCount)")
-                    .font(.system(size: 11).monospacedDigit())
-                    .foregroundStyle(.secondary)
+        TextField("Search shown lines", text: $query)
+            .textFieldStyle(.roundedBorder)
+            .controlSize(.small)
+            .frame(width: 180)
+            .focused($searchFocused)
+            .onSubmit { findNextToken += 1 }
+            .overlay(alignment: .trailing) {
+                if !query.isEmpty {
+                    Text("\(matchCount)")
+                        .font(.system(size: 11).monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .padding(.trailing, 6)
+                }
             }
-            Button("Find") { searchFocused = true }
-                .keyboardShortcut("f")
-                .hidden()
-                .frame(width: 0)
-        }
-        .padding(.trailing, 4)
     }
-
-    private var name: String { process.label.isEmpty ? process.command : process.label }
 
     private func clear() {
         buffer.clear()

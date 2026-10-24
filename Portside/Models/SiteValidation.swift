@@ -6,6 +6,17 @@ enum SiteField: Hashable {
     case port(ProcessConfig.ID)
     case subdomain(ProcessConfig.ID)
     case workingDirectory(ProcessConfig.ID)
+    case commandName(SiteCommand.ID)
+    case commandLine(SiteCommand.ID)
+    case commandDirectory(SiteCommand.ID)
+
+    /// Fields that live on the editor's Commands tab.
+    var isCommand: Bool {
+        switch self {
+        case .commandName, .commandLine, .commandDirectory: true
+        case .name, .folder, .port, .subdomain, .workingDirectory: false
+        }
+    }
 }
 
 struct ValidationIssue: Hashable {
@@ -60,6 +71,21 @@ enum SiteValidation {
             }
             if let wd = p.workingDirectory, !wd.isEmpty, !isDirectory((wd as NSString).expandingTildeInPath, fileManager) {
                 out.append(.init(field: .workingDirectory(p.id), message: "Folder does not exist"))
+            }
+        }
+
+        var seenCommandNames = Set<String>()
+        for c in site.commands {
+            if c.name.trimmingCharacters(in: .whitespaces).isEmpty {
+                out.append(.init(field: .commandName(c.id), message: "Name is required"))
+            } else if !seenCommandNames.insert(c.name).inserted {
+                out.append(.init(field: .commandName(c.id), message: "Another command is named \(c.name)"))
+            }
+            if c.command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                out.append(.init(field: .commandLine(c.id), message: "Command is required"))
+            }
+            if let wd = c.workingDirectory, !wd.isEmpty, !isDirectory((wd as NSString).expandingTildeInPath, fileManager) {
+                out.append(.init(field: .commandDirectory(c.id), message: "Folder does not exist"))
             }
         }
 

@@ -7,6 +7,7 @@ struct Site: Identifiable, Codable, Hashable {
     var main: ProcessConfig
     var extras: [ProcessConfig] = []
     var autoStart: Bool = false
+    var commands: [SiteCommand] = []
 
     var isStatic: Bool { main.isStatic }
 
@@ -29,13 +30,19 @@ struct Site: Identifiable, Codable, Hashable {
         return (dir as NSString).expandingTildeInPath
     }
 
-    init(id: UUID = .init(), name: String, folder: String, main: ProcessConfig, extras: [ProcessConfig] = [], autoStart: Bool = false) {
+    func workingDirectory(for command: SiteCommand) -> String {
+        let dir = command.workingDirectory.flatMap { $0.isEmpty ? nil : $0 } ?? folder
+        return (dir as NSString).expandingTildeInPath
+    }
+
+    init(id: UUID = .init(), name: String, folder: String, main: ProcessConfig, extras: [ProcessConfig] = [], autoStart: Bool = false, commands: [SiteCommand] = []) {
         self.id = id
         self.name = name
         self.folder = folder
         self.main = main
         self.extras = extras
         self.autoStart = autoStart
+        self.commands = commands
     }
 
     init(from decoder: Decoder) throws {
@@ -46,5 +53,6 @@ struct Site: Identifiable, Codable, Hashable {
         main = try c.decode(ProcessConfig.self, forKey: .main)
         extras = try c.decodeIfPresent([ProcessConfig].self, forKey: .extras) ?? []
         autoStart = try c.decodeIfPresent(Bool.self, forKey: .autoStart) ?? false
+        commands = try c.decodeIfPresent([SiteCommand].self, forKey: .commands) ?? []
     }
 }

@@ -33,10 +33,10 @@
 3. Open Portside. macOS blocks the first launch, because Portside is a free project without a paid Apple Developer ID and is not notarized. Allow it once, as described in [First launch](#first-launch). Updates install in place through Sparkle and do not ask again.
 4. Choose your local domain. Portside lists `.localhost`, `.test`, `.loc`, `.local`, and a custom suffix, and shows what each one needs on your Mac. `.localhost` needs no setup and no password.
 
-   Any other suffix needs one file, `/etc/resolver/<suffix>`, which tells macOS to send that suffix's lookups to Portside. Portside explains the file and waits for you to click **Install resolver**. Then macOS asks for your administrator password once. The resolver file is the only change outside your home folder.
+   Any other suffix needs one file, `/etc/resolver/<suffix>`, which tells macOS to send that suffix's lookups to Portside. Portside explains the file and waits for you to click **Install Resolver**. Then macOS asks for your administrator password once. The resolver file is the only change outside your home folder.
 
 <p align="center">
-  <img src="assets/screenshots/onboarding.png" width="480" alt="The Choose your local domain window: .localhost works without setup, .test belongs to another tool on this Mac, .loc and .local need a resolver file, and a custom field">
+  <img src="assets/screenshots/onboarding.png" width="480" alt="The Choose Your Local Domain window: .localhost works without setup, .test belongs to another tool on this Mac, .loc and .local need a resolver file, and a custom field">
 </p>
 
 A Homebrew cask is planned.
@@ -74,10 +74,18 @@ xattr -dr com.apple.quarantine /Applications/Portside.app
 1. Click the Portside icon in the menu bar, then click **Add Site** (⌘N).
 2. Choose the project folder. The name fills in from the folder name, and you can change it. For a name such as `blog`, the site's domain is `blog.localhost`.
 3. Check the command that starts your dev server and the port it listens on. Portside fills the command from the folder when it can, such as `npm run dev` from a `dev` script in `package.json`, `make dev` from a Makefile, or `php artisan serve --port=$PORT` for Laravel, and says which file it used. If the folder has a `.env` with a port, such as `PORT` or `APP_PORT`, Portside fills the port in and says which key it used. When the command is empty, the line under it says the site is static.
-4. To run an API or a worker too, click **Add** under **Additional processes**. Give it a subdomain, such as `api`, to reach it at `api.blog.localhost`.
+4. To run an API or a worker too, click **Add Process** under **Additional processes**. Give it a subdomain, such as `api`, to reach it at `api.blog.localhost`. The remove button at the end of a process's first row takes it out again.
 5. Click **Save**, click the start button on the site's row, and then click the open button. Your browser opens `http://blog.localhost`.
 
 Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each command. A command such as `npm run dev -- --port $PORT` stays in step with the port you entered. Leave the command empty to serve the folder as static files. A static site has a switch in the menu instead of start and stop buttons.
+
+## Commands
+
+A site can also hold commands that you run when you need them, such as a deploy or a database seed. Open the site editor and choose **Commands** in the control at the top. Click **Add Command**, name it, such as `Deploy`, and enter the shell line, such as `make deploy && echo "ok"`. The command runs in the site folder unless you choose another folder.
+
+The site's … menu in the popover lists its commands. Choose one to run it. With **Show logs** on, the logs window opens on the command's tab. With it off, the command runs in the background, and a notification says whether it finished or failed. While a command runs, its menu item reads **Stop Deploy**. Stopping the site leaves a running command alone.
+
+Each command gets `PORTSIDE`, `PORTSIDE_SITE`, and `PORTSIDE_URL`, the site's main URL.
 
 ## How it works
 
@@ -89,7 +97,7 @@ Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each comm
 
 **Proxy.** Portside bundles [Caddy](https://caddyserver.com) and runs it on port 80. Caddy matches the `Host` header and forwards the request to the right local port. WebSockets pass through, so hot reload works. Caddy sets `Host` to the upstream address, such as `localhost:5474`, so dev servers that check the host accept the request. The original host goes in `X-Forwarded-Host`. Turn on **Preserve Host header** for a process that needs the real host. When a site is stopped, its domain shows a Portside page that tells you to start it.
 
-**Check.** **Settings > Network** shows whether your suffix works. **Test now** looks up `portside-selftest.<suffix>` and requests it through Caddy, which answers with a marker. When the check fails, it names the step: DNS, the proxy port, or Caddy.
+**Check.** **Settings > Network** shows whether your suffix works. **Test Now** looks up `portside-selftest.<suffix>` and requests it through Caddy, which answers with a marker. When the check fails, it names the step: DNS, the proxy port, or Caddy.
 
 **Process groups.** Each command runs under `/bin/zsh -ilc` in its own process group. `make dev` and `npm run dev` fork child processes, and stopping only the parent would leave a child holding the port. Portside sends `SIGTERM` to the whole group, waits 5 seconds, then sends `SIGKILL`. If Portside crashes, it kills the leftover groups the next time it starts.
 
@@ -101,7 +109,7 @@ Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each comm
   <img src="assets/screenshots/logs.png" width="720" alt="The logs window for blog with a tab for each process and colored Vite output">
 </p>
 
-Each site has a log window with one tab per process, main process first. The window keeps the last 10,000 lines of each process and renders ANSI colors. It scrolls with new output until you scroll up. From the toolbar you can start, stop, or restart one process, search, copy the output, and open the folder in Finder or Terminal. To keep logs on disk as well, turn on log mirroring in **Settings**. Portside then writes `~/Library/Logs/Portside/<site>/<process>.log`.
+Each site has a log window with one tab per process, main process first, then a tab for each command that ran since Portside started. The window keeps the last 10,000 lines of each process and renders ANSI colors. It scrolls with new output until you scroll up. The line count sits under the window title. The toolbar's left edge starts, stops, or restarts the selected process. Its right edge opens the site in the browser, opens the folder in Finder or Terminal, and holds Follow, Clear, and Copy All. The tabs sit in a bar under the toolbar, with a search field for the shown lines at its end. ⌘F focuses the search. To keep logs on disk as well, turn on log mirroring in **Settings**. Portside then writes `~/Library/Logs/Portside/<site>/<process>.log`, and `<command>.log` for a command.
 
 ## FAQ
 

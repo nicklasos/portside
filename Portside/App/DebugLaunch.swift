@@ -2,13 +2,17 @@
 import AppKit
 import SwiftUI
 
-/// `-PortsideOpenWindow logs:<site>|editor:<site>|editor:new|settings|resolver|onboarding|popover` opens a
-/// surface at launch, so screenshots can be taken without clicking through the menu bar.
+/// `-PortsideOpenWindow logs:<site>|editor:<site>|editor:new|run:<site>:<command>|settings|resolver|onboarding|popover`
+/// opens a surface at launch, so screenshots can be taken without clicking through the menu bar. `run` runs
+/// the command as its menu item would.
+/// `-PortsideSupportDirectory <path>` keeps sites.json, pids.json and logs there instead of the real ones.
 /// `-PortsideSnapshot <file.png>` then renders that window to a PNG from inside the app, which
 /// needs no screen-recording permission, and writes the menu bar glyph variants next to it.
 /// `-PortsideSnapshotDelay <seconds>` waits longer than the default 5, for checks that take time.
+/// `-PortsideEditorTab general|commands` and `-PortsideSettingsTab general|network|advanced` pick the tab
+/// those windows open on.
 /// `-PortsideEditorFolder <path>` makes a new-site editor pick that folder as **Choose…** would.
-/// `-PortsideLogsActions follow,earlier,clear,scrollup,snap` presses those logs-window controls one
+/// `-PortsideLogsActions follow,earlier,clear,find,scrollup,snap` presses those logs-window controls one
 /// per second from `-PortsideLogsActionsDelay <seconds>` (default 3); `snap` writes `<snapshot>-<step>.png`.
 /// `-PortsideLogViewTrace YES` logs the line count of the log view's text storage after every change.
 @MainActor
@@ -25,6 +29,11 @@ enum DebugLaunch {
             switch parts[0] {
             case "logs": if let site { controller.show(.logs(site.id)) }
             case "editor": controller.show(.editor(site.map { .edit($0.id) } ?? .new))
+            case "run":
+                let names = parts[1].split(separator: ":", maxSplits: 1).map(String.init)
+                guard names.count == 2, let site = controller.store.sites.first(where: { $0.name == names[0] }),
+                      let command = site.commands.first(where: { $0.name == names[1] }) else { break }
+                Task { await controller.run(command, in: site) }
             case "settings": controller.show(.settings)
             case "resolver": controller.show(.resolverSetup)
             case "onboarding": controller.show(.onboarding)

@@ -24,7 +24,7 @@ struct ResolverSetupView: View {
                 buttons
             }
         }
-        .padding(22)
+        .padding(20)
         .frame(width: 480)
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -69,11 +69,11 @@ struct ResolverSetupView: View {
         case .missing:
             Button("Later") { dismiss() }
                 .keyboardShortcut(.cancelAction)
-            Button("Install resolver") { controller.installResolver() }
+            Button("Install Resolver") { controller.installResolver() }
                 .keyboardShortcut(.defaultAction)
                 .disabled(controller.isInstallingResolver)
         case .mismatched:
-            Button("Not now") {
+            Button("Not Now") {
                 controller.dismissResolverPrompt()
                 dismiss()
             }

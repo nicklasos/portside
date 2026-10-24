@@ -199,6 +199,91 @@ final class ProcessManagerTests: XCTestCase {
         }
     }
 
+    func testCommandOutputIsCapturedAndFinishingReportsItsCodeNotACrash() async throws {
+        let manager = makeManager()
+        var crashes: [Int32] = []
+        var finished: [(Site.ID, SiteCommand.ID, Int32)] = []
+        manager.onUnexpectedExit = { _, _, code in crashes.append(code) }
+        manager.onCommandFinished = { finished.append(($0, $1, $2)) }
+        let ok = SiteCommand(name: "Deploy", command: "echo deployed")
+        let bad = SiteCommand(name: "Lint", command: "echo broken; exit 2")
+        var site = makeSite("sleep 30")
+        site.commands = [ok, bad]
+
+        await manager.run(ok, in: site)
+        await manager.run(bad, in: site)
+        try await waitUntil("both finished") { finished.count == 2 }
+
+        XCTAssertEqual(crashes, [])
+        XCTAssertEqual(finished.first { $0.1 == ok.id }?.2, 0)
+        XCTAssertEqual(finished.first { $0.1 == bad.id }?.2, 2)
+        XCTAssertTrue(finished.allSatisfy { $0.0 == site.id })
+        XCTAssertEqual(manager.state(of: bad.id), .exited(code: 2))
+        XCTAssertTrue(manager.buffer(for: ok.id).snapshot().lines.contains("deployed"))
+        XCTAssertEqual(Array(manager.buffer(for: bad.id).snapshot().lines.suffix(2)), ["broken", "■ exited with code 2"])
+        XCTAssertTrue(manager.hasRun(ok.id))
+        XCTAssertFalse(manager.hasRun(UUID()))
+    }
+
+    func testCommandRunsInItsFolderWithTheSiteEnvironment() async throws {
+        let manager = makeManager()
+        let sub = dir.appendingPathComponent("deploy")
+        try FileManager.default.createDirectory(at: sub, withIntermediateDirectories: true)
+        let command = SiteCommand(name: "Deploy", command: "echo \"env=$PORTSIDE $PORTSIDE_SITE $PORTSIDE_URL $PORT\"; echo cwd=$PWD", workingDirectory: sub.path)
+        var site = makeSite("sleep 30")
+        site.commands = [command]
+
+        await manager.run(command, in: site)
+        try await waitUntil("exit") { manager.state(of: command.id) == .exited(code: 0) }
+
+        let buffer = manager.buffer(for: command.id)
+        XCTAssertEqual(printed("env", in: buffer), ["1 blog http://blog.localhost "])
+        XCTAssertEqual(printed("cwd", in: buffer).map { URL(fileURLWithPath: $0).resolvingSymlinksInPath() }, [sub.resolvingSymlinksInPath()])
+    }
+
+    func testStoppingASiteLeavesItsRunningCommandAlive() async throws {
+        let manager = makeManager()
+        var finished: [Int32] = []
+        manager.onCommandFinished = { _, _, code in finished.append(code) }
+        let command = SiteCommand(name: "Deploy", command: "echo leader=$$; exec sleep 30")
+        var site = makeSite("sleep 30")
+        site.commands = [command]
+        await manager.start(site)
+        await manager.run(command, in: site)
+        let buffer = manager.buffer(for: command.id)
+        try await waitUntil("command printed") { !pids("leader", in: buffer).isEmpty }
+        let leader = try XCTUnwrap(pids("leader", in: buffer).first)
+
+        await manager.stop(site)
+
+        XCTAssertEqual(manager.status(of: site), .stopped)
+        XCTAssertEqual(manager.state(of: command.id), .running)
+        XCTAssertFalse(isGone(leader), "stopping the site killed its command")
+
+        await manager.stop(processID: command.id)
+        XCTAssertTrue(isGone(leader))
+        XCTAssertEqual(manager.state(of: command.id), .stopped)
+        try await Task.sleep(for: .milliseconds(300))
+        XCTAssertEqual(finished, [], "a requested stop reported the command as finished")
+    }
+
+    func testApplyStopsARunningCommandThatWasRemoved() async throws {
+        let manager = makeManager()
+        let deploy = SiteCommand(name: "Deploy", command: "echo leader=$$; exec sleep 30")
+        let old = Site(name: "blog", folder: dir.path, main: ProcessConfig(label: "Frontend", command: "sleep 30", port: 5474), commands: [deploy])
+        await manager.run(deploy, in: old)
+        let buffer = manager.buffer(for: deploy.id)
+        try await waitUntil("command printed") { !pids("leader", in: buffer).isEmpty }
+        let leader = try XCTUnwrap(pids("leader", in: buffer).first)
+
+        var new = old
+        new.commands = []
+        _ = await manager.apply(edited: new, previous: old)
+
+        XCTAssertTrue(isGone(leader))
+        XCTAssertEqual(manager.state(of: deploy.id), .stopped)
+    }
+
     func testRelaunchKillsGroupsLeftByACrashedRun() async throws {
         let crashed = makeManager(pidFile: "crashed.json")
         let site = makeSite("echo leader=$$; sleep 30 & echo child=$!; wait")

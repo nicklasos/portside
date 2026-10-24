@@ -1,15 +1,32 @@
 import ServiceManagement
 import SwiftUI
 
+private enum SettingsTab: String {
+    case general, network, advanced
+}
+
 struct SettingsView: View {
+    @State private var tab: SettingsTab = .general
+
+    init() {
+        #if DEBUG
+        if let raw = UserDefaults.standard.string(forKey: "PortsideSettingsTab"), let tab = SettingsTab(rawValue: raw) {
+            _tab = State(initialValue: tab)
+        }
+        #endif
+    }
+
     var body: some View {
-        TabView {
+        TabView(selection: $tab) {
             GeneralSettings()
                 .tabItem { Label("General", systemImage: "gearshape") }
+                .tag(SettingsTab.general)
             NetworkSettings()
                 .tabItem { Label("Network", systemImage: "network") }
+                .tag(SettingsTab.network)
             AdvancedSettings()
                 .tabItem { Label("Advanced", systemImage: "wrench.and.screwdriver") }
+                .tag(SettingsTab.advanced)
         }
         .frame(width: 520)
     }
@@ -40,7 +57,7 @@ private struct GeneralSettings: View {
             }
         }
         .formStyle(.grouped)
-        .frame(height: 280)
+        .fittedToContent()
     }
 
     private func setLaunchAtLogin(_ on: Bool) {
@@ -249,7 +266,7 @@ private struct AdvancedSettings: View {
             }
         }
         .formStyle(.grouped)
-        .frame(height: showsCaddyLog ? 400 : 240)
+        .fittedToContent()
         .onAppear { adminPort = String(controller.settings.caddyAdminPort) }
     }
 
@@ -264,5 +281,14 @@ private struct AdvancedSettings: View {
             await controller.resetSettings()
             adminPort = String(controller.settings.caddyAdminPort)
         }
+    }
+}
+
+private extension View {
+    /// A grouped form scrolls by default and takes whatever height it is given; a short Settings
+    /// pane should be exactly as tall as its rows, as native Settings panes are.
+    func fittedToContent() -> some View {
+        scrollBounceBehavior(.basedOnSize)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
