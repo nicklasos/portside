@@ -56,6 +56,7 @@
 		B0DEF5AAF43E1667B0AFEF7B /* AccessLogTail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967FFCE007FFC14C518701A8 /* AccessLogTail.swift */; };
 		BA890D7D61347347F097EFCD /* MenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044CCB785BFB4C254C9E1C41 /* MenuBarIcon.swift */; };
 		BD696FC1908EA6D273128BC1 /* FolderPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D85F66C6944538093A05308 /* FolderPicker.swift */; };
+		BE11F739F67A193F69EE5931 /* SiteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87E2D0D1769BD3D6D6FAF9E7 /* SiteCommand.swift */; };
 		C67A3783DB88C70ABC93BDDB /* DNSServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */; };
 		C9EE1913639F22AC5CF9AD7A /* ProcessConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1333F982FEFDE2D075BE268A /* ProcessConfig.swift */; };
 		CA3B3DF28C7AB30F97684280 /* Spawn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BFDFC391E360490C37A697 /* Spawn.swift */; };
@@ -129,6 +130,7 @@
 		7D4ABCFAE5C2CB16BC98433B /* CaddyConfigBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaddyConfigBuilderTests.swift; sourceTree = "<group>"; };
 		7DE49C32AE0CFCE36B270BBF /* caddy-static-disabled.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "caddy-static-disabled.json"; sourceTree = "<group>"; };
 		80583E3DBCE3CCC37066F2FD /* CommandDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandDetectorTests.swift; sourceTree = "<group>"; };
+		87E2D0D1769BD3D6D6FAF9E7 /* SiteCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteCommand.swift; sourceTree = "<group>"; };
 		896C8604AD87D65C3B6E3395 /* DNSServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSServerTests.swift; sourceTree = "<group>"; };
 		8BD92124D73C1E797842E28D /* AppPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPaths.swift; sourceTree = "<group>"; };
 		8D85F66C6944538093A05308 /* FolderPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPicker.swift; sourceTree = "<group>"; };
@@ -288,6 +290,7 @@
 				0432C68AD95AEF901F67FC47 /* DomainSuffix.swift */,
 				1333F982FEFDE2D075BE268A /* ProcessConfig.swift */,
 				DB013570A77DEFBE17D837C2 /* Site.swift */,
+				87E2D0D1769BD3D6D6FAF9E7 /* SiteCommand.swift */,
 				9270A7646452D32DB6A624FC /* SiteStatus.swift */,
 				A3371F8479F06873CE6C9225 /* SiteValidation.swift */,
 			);
@@ -535,6 +538,7 @@
 				2609696D4CCF72DE957A8EF4 /* ResolverSetupView.swift in Sources */,
 				124DD8BE547EA9F7784D3C22 /* SettingsView.swift in Sources */,
 				E5170F2CC46A9D7CF7EE0704 /* Site.swift in Sources */,
+				BE11F739F67A193F69EE5931 /* SiteCommand.swift in Sources */,
 				0EA197175A575878CC6CBD14 /* SiteEditorView.swift in Sources */,
 				049E31B0EDD90D531D530215 /* SiteRowView.swift in Sources */,
 				798DCC7E03E3800EF57F70E6 /* SiteStatus.swift in Sources */,
