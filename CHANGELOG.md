@@ -10,8 +10,16 @@ All notable changes to this project are documented here.
 
 - Per-site commands, such as a deploy, run from the site's … menu in the popover. The site editor has a **Commands** tab where each command gets a name, a shell line, a folder, and a **Show logs** switch. With **Show logs** on, the logs window opens on the command's tab. With it off, the command runs in the background and a notification says whether it finished or failed.
 
+### Changed
+
+- The site editor centers its General/Commands control above the form and drops the heading that repeated the window title. Labels share one right-aligned column, and each process or command box has a compact remove button at the end of its first row. **Add Process** and **Add Command** sit under their lists, and a site with no commands shows an empty state.
+- The popover gives its header, rows, and footer one shared inset. Start and Stop use outlined glyphs that match the other row icons.
+- The logs window moves its actions into the window toolbar and shows the line count under the title. The tabs sit in a scope bar with the search field.
+- Settings panes fit their rows. Onboarding shows its title once, centered under the icon, and setup buttons use title case, such as **Install Resolver** and **Test Now**.
+
 ### Fixed
 
+- The site editor no longer shows a stray divider under its title bar on shorter tabs.
 - Clicking the menu bar icon brings open Logs and Site windows back in front of other apps' windows, since a menu bar app has no ⌘Tab entry to reach them.
 
 ## [0.1.0] - 2026-10-21

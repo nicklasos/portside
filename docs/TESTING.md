@@ -244,7 +244,7 @@ Run this checklist before a release, on a release build from [`scripts/build-rel
 
 - [ ] Copy `Portside.app` to `/Applications` and open it. macOS blocks the first launch because the app is not notarized. On macOS 14, Control-click the app and choose **Open**. On macOS 15 or later, open **System Settings > Privacy & Security** and click **Open Anyway**.
 - [ ] The Portside icon appears in the menu bar. No Dock icon appears.
-- [ ] The **Choose your local domain** window opens. `.localhost` is selected and shows three green lines. No password prompt appears.
+- [ ] The **Choose Your Local Domain** window opens. `.localhost` is selected and shows three green lines. No password prompt appears.
 - [ ] Click **Continue**. The window shows "Works end to end" with a green mark. Click **Done**.
 - [ ] `lsof -nP -iUDP:35353` prints nothing. Portside runs no DNS server for `.localhost`.
 - [ ] **Settings > Network** shows `/etc/resolver/localhost` as "Built in, no setup needed".
@@ -254,12 +254,12 @@ If the window says this Mac does not resolve `.localhost`, follow the `.test` st
 ### The `.test` suffix
 
 - [ ] In **Settings > Network**, choose `.test` and click **Use .test**. The resolver window explains `/etc/resolver/test`.
-- [ ] Click **Install resolver** and enter your administrator password.
+- [ ] Click **Install Resolver** and enter your administrator password.
 - [ ] `cat /etc/resolver/test` prints `nameserver 127.0.0.1` and `port 35353`.
 - [ ] `dig @127.0.0.1 -p 35353 blog.test +short` prints `127.0.0.1`.
 - [ ] `dig @127.0.0.1 -p 35353 portside-selftest.test +short` prints `127.0.0.53`.
 - [ ] `dscacheutil -q host -a name blog.test` lists `127.0.0.1`. This proves macOS sends `.test` lookups to Portside.
-- [ ] **Test now** in **Settings > Network** shows "Works end to end".
+- [ ] **Test Now** in **Settings > Network** shows "Works end to end".
 - [ ] Choose `.localhost` again. Settings offers **Remove /etc/resolver/test…**. Click it and enter your password. The file is gone, and `lsof -nP -iUDP:35353` prints nothing.
 
 ### A Vite site
@@ -288,7 +288,7 @@ If the window says this Mac does not resolve `.localhost`, follow the `.test` st
 
 ### An extra process on a subdomain
 
-- [ ] Edit the site. Add a process with the label `API`, the subdomain `api`, the command `python3 -m http.server 8185`, and the port `8185`. Save while the site runs.
+- [ ] Edit the site. Click **Add Process** and enter the label `API`, the subdomain `api`, the command `python3 -m http.server 8185`, and the port `8185`. Save while the site runs.
 - [ ] Only the new API process starts. The Vite process keeps its pid, which the `▶` line in its log shows.
 - [ ] `curl -s http://api.blog.localhost/ | head -n 3` prints the directory listing from Python.
 - [ ] Find the API's pid in its log and run `kill <pid>`. The site's dot turns red, the API row shows the exit code, and a notification appears.
@@ -329,8 +329,8 @@ Run this section on a Mac with Herd or Valet installed. Both write `nameserver 1
 - [ ] With `.localhost` chosen, Portside does not mention `/etc/resolver/test`, and the `.test` option in **Settings > Network** shows the Herd file with a takeover warning.
 - [ ] Portside reports port 80 in use by Herd's nginx. Move the proxy to port 8080 and check that `http://blog.localhost:8080` works while Herd sites still resolve.
 - [ ] Choose `.test`. Portside says the resolver file belongs to another tool and asks before it replaces the file.
-- [ ] Decline. `.test` lookups keep going to Herd, and **Test now** reports that `portside-selftest.test` does not resolve through Portside's DNS server.
-- [ ] Repair the resolver from **Settings** and accept. `cat /etc/resolver/test` shows `port 35353`, and **Test now** passes.
+- [ ] Decline. `.test` lookups keep going to Herd, and **Test Now** reports that `portside-selftest.test` does not resolve through Portside's DNS server.
+- [ ] Repair the resolver from **Settings** and accept. `cat /etc/resolver/test` shows `port 35353`, and **Test Now** passes.
 - [ ] Switch back to Herd with Herd's own repair, or with `sudo sh -c 'printf "nameserver 127.0.0.1\n" > /etc/resolver/test'`. Herd sites resolve again.
 
 ### Quit and crash recovery

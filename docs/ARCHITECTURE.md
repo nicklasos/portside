@@ -55,7 +55,7 @@ A resolver file decides the strategy on its own. Herd's `/etc/resolver/test` mak
 
 ### End-to-end check
 
-`EndToEndCheck.run` runs at launch, after a resolver install, and from **Test now** in Settings. It reports the first step that fails:
+`EndToEndCheck.run` runs at launch, after a resolver install, and from **Test Now** in Settings. It reports the first step that fails:
 
 1. DNS. `portside-selftest.<suffix>` must resolve to `127.0.0.53` under `portsideDNS`, which proves the answer came from Portside's server. Under `system`, it must resolve to loopback only.
 2. The proxy state. A port conflict names the owner. A stopped or failed Caddy says so.
@@ -182,7 +182,7 @@ Ending on its own is how a command is meant to end, so its exit never counts as 
 
 `ManagedProcess` reads both pipes on its own serial queue and appends raw bytes to the process's `LogBuffer`. The buffer splits on `\n`, treats `\r\n` as one newline, keeps ANSI escapes for the log view to render, and holds a partial line until its newline arrives. A partial line that grows past 64 KiB becomes a line by itself. Past 10,000 lines, the oldest lines are dropped and counted. Portside adds its own lines, such as `▶ make dev (pid 4242)`, to the same buffer. With log mirroring on, every line is also appended to `~/Library/Logs/Portside/<site>/<label>.log`, or `<name>.log` for a command.
 
-The logs window has a tab for each process, then one for each command that has run this session, marked with a terminal symbol. `PortsideController.logTabs` holds each window's selected tab, so `show(.logs(site, tab:))` opens the window on a given tab. Running a command and a notification's **Show logs** action both use it.
+The logs window has a tab for each process, then one for each command that has run this session, marked with a terminal symbol. `PortsideController.logTabs` holds each window's selected tab, so `show(.logs(site, tab:))` opens the window on a given tab. Running a command and a notification's **Show logs** action both use it. The tabs are toggles in a scope bar under the window toolbar, with the search field at its trailing end. The toolbar puts the selected tab's start, stop, restart, or run control at the leading edge. Open in Browser, Reveal in Finder, Open in Terminal, Follow, Clear, and Copy All sit at the trailing edge. The window subtitle shows the buffer's line count.
 
 The logs window renders only the newest 1,000 lines of a buffer. `LogWindow` picks them by absolute line number and tells `LogTextView` what to remove at the top, prepend, or append, so new output never re-renders the lines already shown. A bar above the text says how many lines are shown, loads 1,000 earlier lines per click up to the whole buffer, and counts the lines the buffer dropped. Search covers the shown lines. **Copy All** copies the whole buffer. `LogViewState` holds the shown limit and Follow, which is off by default. The pane opens at the newest line once its scroll view has a size. Follow pins the view there, and scrolling away turns it off. With Follow off, lines added or trimmed above the visible ones do not move them.
 
