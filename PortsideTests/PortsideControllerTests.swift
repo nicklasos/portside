@@ -52,6 +52,51 @@ final class PortsideControllerTests: XCTestCase {
         XCTAssertEqual(controller.menuBarStatus, MenuBarStatus(isActive: false, needsAttention: false))
     }
 
+    func testRunningACommandThatShowsLogsSelectsItsTab() async throws {
+        var site = makeSite()
+        let deploy = SiteCommand(name: "Deploy", command: "sleep 30")
+        let seed = SiteCommand(name: "Seed", command: "sleep 30", showsLogs: false)
+        site.commands = [deploy, seed]
+        try await controller.save(edited: site)
+
+        await controller.run(seed, in: site)
+        XCTAssertTrue(controller.isRunning(seed))
+        XCTAssertNil(controller.logTabs[site.id], "a background command opened the logs")
+
+        await controller.run(deploy, in: site)
+        XCTAssertTrue(controller.isRunning(deploy))
+        XCTAssertEqual(controller.logTabs[site.id], deploy.id)
+
+        await controller.stopCommand(deploy)
+        XCTAssertFalse(controller.isRunning(deploy))
+    }
+
+    func testSavingAStoppedSiteWithoutARunningCommandStopsIt() async throws {
+        var site = makeSite()
+        let deploy = SiteCommand(name: "Deploy", command: "sleep 30")
+        site.commands = [deploy]
+        try await controller.save(edited: site)
+        await controller.run(deploy, in: site)
+
+        site.commands = []
+        let notice = try await controller.save(edited: site)
+
+        XCTAssertNil(notice)
+        XCTAssertFalse(controller.isRunning(deploy))
+    }
+
+    func testDeletingASiteStopsItsCommands() async throws {
+        var site = makeSite()
+        let deploy = SiteCommand(name: "Deploy", command: "sleep 30")
+        site.commands = [deploy]
+        try await controller.save(edited: site)
+        await controller.run(deploy, in: site)
+
+        await controller.delete(site)
+
+        XCTAssertFalse(controller.isRunning(deploy))
+    }
+
     func testSavingANewSitePersistsWithoutNotice() async throws {
         let notice = try await controller.save(edited: makeSite())
         XCTAssertNil(notice)

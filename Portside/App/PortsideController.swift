@@ -8,7 +8,8 @@ enum EditorTarget: Codable, Hashable {
 
 enum AppWindow: Hashable {
     case editor(EditorTarget)
-    case logs(Site.ID)
+    /// `tab` selects a process or command tab. nil keeps the window's current tab.
+    case logs(Site.ID, tab: UUID? = nil)
     case onboarding
     case resolverSetup
     case settings
@@ -86,6 +87,8 @@ final class PortsideController {
     private(set) var isCheckingEndToEnd = false
     private(set) var resolverError: String?
     private(set) var isInstallingResolver = false
+    /// The selected tab of each site's logs window, so a request can open the window on a given tab.
+    var logTabs: [Site.ID: UUID] = [:]
 
     @ObservationIgnored private var dns: DNSServer?
     @ObservationIgnored private let notifier = Notifier()
@@ -113,7 +116,10 @@ final class PortsideController {
         processes.onUnexpectedExit = { [weak self] site, process, code in
             self?.processExitedUnexpectedly(site: site, process: process, code: code)
         }
-        notifier.onShowLogs = { [weak self] id in self?.show(.logs(id)) }
+        processes.onCommandFinished = { [weak self] site, command, code in
+            self?.commandFinished(site: site, command: command, code: code)
+        }
+        notifier.onShowLogs = { [weak self] id, tab in self?.show(.logs(id, tab: tab)) }
     }
 
     // MARK: - Derived state
@@ -224,9 +230,12 @@ final class PortsideController {
         let previous = store.site(id: site.id)
         try store.upsert(site)
         var notice: String?
-        if let previous, isAnyProcessAlive(previous) {
+        if let previous {
+            let wasRunning = isAnyProcessAlive(previous)
             let restarted = await processes.apply(edited: site, previous: previous)
-            notice = restarted.isEmpty ? "Saved. The proxy picked up the change." : "Saved. Restarted \(restarted.joined(separator: ", "))."
+            if wasRunning {
+                notice = restarted.isEmpty ? "Saved. The proxy picked up the change." : "Saved. Restarted \(restarted.joined(separator: ", "))."
+            }
         }
         syncProxy()
         return notice
@@ -234,6 +243,7 @@ final class PortsideController {
 
     func delete(_ site: Site) async {
         await processes.stop(site)
+        for command in site.commands { await processes.stop(processID: command.id) }
         do {
             try store.delete(id: site.id)
         } catch {
@@ -251,6 +261,21 @@ final class PortsideController {
         } catch {
             presentError("Could not duplicate \(site.name)", error)
         }
+    }
+
+    // MARK: - Command intents
+
+    func isRunning(_ command: SiteCommand) -> Bool {
+        processes.state(of: command.id).isAlive
+    }
+
+    func run(_ command: SiteCommand, in site: Site) async {
+        await processes.run(command, in: site)
+        if command.showsLogs { show(.logs(site.id, tab: command.id)) }
+    }
+
+    func stopCommand(_ command: SiteCommand) async {
+        await processes.stop(processID: command.id)
     }
 
     // MARK: - Workspace intents
@@ -287,6 +312,7 @@ final class PortsideController {
     }
 
     func show(_ window: AppWindow) {
+        if case .logs(let site, let tab?) = window { logTabs[site] = tab }
         NSApp.activate(ignoringOtherApps: true)
         if let windowRouter { windowRouter(window) } else { pendingWindows.append(window) }
     }
@@ -458,10 +484,22 @@ final class PortsideController {
     private func processExitedUnexpectedly(site siteID: Site.ID, process processID: ProcessConfig.ID, code: Int32) {
         guard code != 0, settings.notifyOnCrash, configuration.isLive,
               let site = store.site(id: siteID), let process = site.processes.first(where: { $0.id == processID }) else { return }
-        let lastLine = processes.buffer(for: processID).snapshot().lines.last { line in
+        notifier.postExit(site: site, process: process, code: code, lastLine: lastOutputLine(of: processID))
+    }
+
+    /// Commands that open the logs window need no notification, since their output is on screen.
+    private func commandFinished(site siteID: Site.ID, command commandID: SiteCommand.ID, code: Int32) {
+        guard configuration.isLive, let site = store.site(id: siteID),
+              let command = site.commands.first(where: { $0.id == commandID }), !command.showsLogs else { return }
+        notifier.postCommandFinished(site: site, command: command, code: code, lastLine: lastOutputLine(of: commandID))
+    }
+
+    /// The last line the program printed, without color codes, skipping Portside's own lines.
+    private func lastOutputLine(of id: UUID) -> String? {
+        let line = processes.buffer(for: id).snapshot().lines.last { line in
             !line.hasPrefix("■") && !ANSIParser.runs(line).map(\.text).joined().trimmingCharacters(in: .whitespaces).isEmpty
         }
-        notifier.postExit(site: site, process: process, code: code, lastLine: lastLine.map { ANSIParser.runs($0).map(\.text).joined() })
+        return line.map { ANSIParser.runs($0).map(\.text).joined() }
     }
 
     private func presentError(_ title: String, _ error: Error) {
