@@ -46,6 +46,11 @@ struct LogTextView: NSViewRepresentable {
         #if DEBUG
         center.addObserver(coordinator, selector: #selector(Coordinator.debugAction), name: DebugLaunch.logsAction, object: nil)
         #endif
+        // The log, not the first tab, takes the first focus once the view is in its window, so the
+        // window does not open with a focus ring on a tab when keyboard navigation is on.
+        DispatchQueue.main.async { [weak textView] in
+            textView?.window?.makeFirstResponder(textView)
+        }
         return scrollView
     }
 

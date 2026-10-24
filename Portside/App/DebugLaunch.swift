@@ -12,7 +12,7 @@ import SwiftUI
 /// `-PortsideEditorTab general|commands` and `-PortsideSettingsTab general|network|advanced` pick the tab
 /// those windows open on.
 /// `-PortsideEditorFolder <path>` makes a new-site editor pick that folder as **Choose…** would.
-/// `-PortsideLogsActions follow,earlier,clear,scrollup,snap` presses those logs-window controls one
+/// `-PortsideLogsActions follow,earlier,clear,find,scrollup,snap` presses those logs-window controls one
 /// per second from `-PortsideLogsActionsDelay <seconds>` (default 3); `snap` writes `<snapshot>-<step>.png`.
 /// `-PortsideLogViewTrace YES` logs the line count of the log view's text storage after every change.
 @MainActor
