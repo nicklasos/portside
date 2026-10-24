@@ -61,12 +61,11 @@ struct SiteEditorView: View {
         let issues = controller.store.issues(for: draft)
         VStack(alignment: .leading, spacing: 0) {
             // The window grows with the site and only scrolls once the form no longer fits on screen.
-            if formHeight > maxFormHeight {
-                ScrollView { measuredForm(issues) }
-                    .frame(height: maxFormHeight)
-            } else {
-                measuredForm(issues)
-            }
+            // The form is always in a scroll view: the titlebar draws its separator line only when no
+            // scroll view sits under it, so swapping one in for tall forms showed the line on one tab only.
+            ScrollView { measuredForm(issues) }
+                .scrollBounceBehavior(.basedOnSize)
+                .frame(height: min(formHeight, maxFormHeight))
             Divider()
             footer(issues)
         }
