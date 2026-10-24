@@ -6,6 +6,10 @@ struct MenuBarView: View {
 
     private static let rowHeight: CGFloat = 46
     private static let visibleRows = 8
+    /// Highlighted rows sit this far inside the popover's edge, as menu items do.
+    static let rowInset: CGFloat = 5
+    /// Text and icons sit this far from the popover's edge, inside a highlighted row or not.
+    static let contentInset: CGFloat = 14
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -27,8 +31,7 @@ struct MenuBarView: View {
             Spacer()
             IconButton("gearshape", help: "Settings…") { open(.settings) }
         }
-        .padding(.leading, 14)
-        .padding(.trailing, 8)
+        .padding(.horizontal, Self.contentInset)
         .padding(.vertical, 8)
     }
 
@@ -52,7 +55,7 @@ struct MenuBarView: View {
                     }
                 }
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, Self.contentInset)
             .padding(.vertical, 8)
             .background(Color.orange.opacity(0.08))
             Divider()
@@ -73,7 +76,7 @@ struct MenuBarView: View {
                     SiteRowView(site: site)
                 }
             }
-            .padding(4)
+            .padding(Self.rowInset)
             if controller.store.sites.count > Self.visibleRows {
                 ScrollView { rows }
                     .frame(height: Self.rowHeight * CGFloat(Self.visibleRows))
@@ -93,7 +96,7 @@ struct MenuBarView: View {
                 MenuRow("Stop All", systemImage: "stop") { Task { await controller.stopAll() } }
                     .disabled(!controller.menuBarStatus.isActive)
             }
-            Divider().padding(.vertical, 4)
+            Divider().padding(.vertical, Self.rowInset)
             MenuRow("Check for Updates…") {
                 dismiss()
                 controller.checkForUpdates()
@@ -105,7 +108,7 @@ struct MenuBarView: View {
             MenuRow("Quit Portside", shortcut: "⌘Q") { NSApp.terminate(nil) }
                 .keyboardShortcut("q")
         }
-        .padding(4)
+        .padding(Self.rowInset)
     }
 
     private func open(_ window: AppWindow) {
@@ -193,12 +196,11 @@ struct MenuRow: View {
                 }
             }
             .font(.system(size: 13))
-            .padding(.horizontal, 10)
+            .padding(.horizontal, MenuBarView.contentInset - MenuBarView.rowInset)
             .padding(.vertical, 4)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 5).fill(hovering && isEnabled ? Color.accentColor.opacity(0.85) : .clear))
-            .foregroundStyle(hovering && isEnabled ? Color.white : Color.primary)
-            .opacity(isEnabled ? 1 : 0.4)
+            .background(RoundedRectangle(cornerRadius: 5).fill(hovering && isEnabled ? Color.accentColor : .clear))
+            .foregroundStyle(hovering && isEnabled ? Color.white : isEnabled ? Color.primary : Color(nsColor: .tertiaryLabelColor))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
