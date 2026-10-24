@@ -35,6 +35,7 @@ struct PortsideApp: App {
             OnboardingView()
                 .environment(controller)
         }
+        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         .defaultPosition(.center)
 

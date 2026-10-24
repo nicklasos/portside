@@ -57,7 +57,7 @@ private struct GeneralSettings: View {
             }
         }
         .formStyle(.grouped)
-        .frame(height: 280)
+        .fittedToContent()
     }
 
     private func setLaunchAtLogin(_ on: Bool) {
@@ -266,7 +266,7 @@ private struct AdvancedSettings: View {
             }
         }
         .formStyle(.grouped)
-        .frame(height: showsCaddyLog ? 400 : 240)
+        .fittedToContent()
         .onAppear { adminPort = String(controller.settings.caddyAdminPort) }
     }
 
@@ -281,5 +281,14 @@ private struct AdvancedSettings: View {
             await controller.resetSettings()
             adminPort = String(controller.settings.caddyAdminPort)
         }
+    }
+}
+
+private extension View {
+    /// A grouped form scrolls by default and takes whatever height it is given; a short Settings
+    /// pane should be exactly as tall as its rows, as native Settings panes are.
+    func fittedToContent() -> some View {
+        scrollBounceBehavior(.basedOnSize)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }

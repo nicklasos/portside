@@ -11,18 +11,18 @@ struct OnboardingView: View {
     @State private var applied: DomainSuffix?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 20) {
+            // The window hides its title bar, so this header is the only title.
+            VStack(spacing: 4) {
                 Image(nsImage: NSApp.applicationIconImage)
                     .resizable()
-                    .frame(width: 48, height: 48)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Choose your local domain")
-                        .font(.title3.weight(.semibold))
-                    Text("Every site gets a name under it. You can change it later in Settings.")
-                        .foregroundStyle(.secondary)
-                }
+                    .frame(width: 56, height: 56)
+                Text("Choose Your Local Domain")
+                    .font(.title2.weight(.semibold))
+                Text("Every site gets a name under it. You can change it later in Settings.")
+                    .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity)
             DomainSuffixPicker(draft: $draft)
             if applied != nil, applied == draft.suffix {
                 EndToEndRow()
@@ -39,7 +39,7 @@ struct OnboardingView: View {
                 }
             }
         }
-        .padding(22)
+        .padding(20)
         .frame(width: 540)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear { draft = DomainSuffixDraft(controller.settings.domainSuffix) }
@@ -80,7 +80,7 @@ struct EndToEndRow: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Button("Test now") { Task { await controller.runEndToEndCheck() } }
+            Button("Test Now") { Task { await controller.runEndToEndCheck() } }
                 .controlSize(.small)
                 .disabled(controller.isCheckingEndToEnd || controller.resolution == nil)
         }
