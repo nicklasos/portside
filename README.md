@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/menubar.png" width="420" alt="The Portside menu bar popover with three sites: blog running, shop stopped, and crm with a crashed process">
+  <img src="assets/screenshots/menubar.png" width="508" alt="The Portside menu bar popover with three sites: smartcity running with its … menu open on its Deploy dev and Deploy prod commands, blog stopped, and the static shop site switched on">
 </p>
 
 ## What it does
@@ -36,7 +36,7 @@
    Any other suffix needs one file, `/etc/resolver/<suffix>`, which tells macOS to send that suffix's lookups to Portside. Portside explains the file and waits for you to click **Install Resolver**. Then macOS asks for your administrator password once. The resolver file is the only change outside your home folder.
 
 <p align="center">
-  <img src="assets/screenshots/onboarding.png" width="480" alt="The Choose Your Local Domain window: .localhost works without setup, .test belongs to another tool on this Mac, .loc and .local need a resolver file, and a custom field">
+  <img src="assets/screenshots/domain.png" width="546" alt="The domain choice in Settings: .localhost works without setup, .test belongs to another tool on this Mac, .loc resolves through Portside, .local is not recommended, and a custom .wip suffix needs a resolver file">
 </p>
 
 A Homebrew cask is planned.
@@ -68,7 +68,7 @@ xattr -dr com.apple.quarantine /Applications/Portside.app
 ## Quick start
 
 <p align="center">
-  <img src="assets/screenshots/editor.png" width="560" alt="The site editor with a main process on port 5474 and an API process on the api subdomain">
+  <img src="assets/screenshots/editor.png" width="560" alt="The New Site editor for blog with npm run dev on port 3000 and a PHP API process on the api subdomain">
 </p>
 
 1. Click the Portside icon in the menu bar, then click **Add Site** (⌘N).
@@ -80,6 +80,10 @@ xattr -dr com.apple.quarantine /Applications/Portside.app
 Portside passes `PORT`, `HOST`, `PORTSIDE_SITE`, and `PORTSIDE_URL` to each command. A command such as `npm run dev -- --port $PORT` stays in step with the port you entered. Leave the command empty to serve the folder as static files. A static site has a switch in the menu instead of start and stop buttons.
 
 ## Commands
+
+<p align="center">
+  <img src="assets/screenshots/commands.png" width="560" alt="The Commands tab of the blog editor with Deploy dev and Deploy prod commands, each running make in ~/Projects/blog with Show logs on">
+</p>
 
 A site can also hold commands that you run when you need them, such as a deploy or a database seed. Open the site editor and choose **Commands** in the control at the top. Click **Add Command**, name it, such as `Deploy`, and enter the shell line, such as `make deploy && echo "ok"`. The command runs in the site folder unless you choose another folder.
 
@@ -106,7 +110,7 @@ Each command gets `PORTSIDE`, `PORTSIDE_SITE`, and `PORTSIDE_URL`, the site's ma
 ## Logs
 
 <p align="center">
-  <img src="assets/screenshots/logs.png" width="720" alt="The logs window for blog with a tab for each process and colored Vite output">
+  <img src="assets/screenshots/logs.png" width="720" alt="The logs window for smartcity with a tab for each of its three processes and colored Vite output">
 </p>
 
 Each site has a log window with one tab per process, main process first, then a tab for each command that ran since Portside started. The window keeps the last 10,000 lines of each process and renders ANSI colors. It scrolls with new output until you scroll up. The line count sits under the window title. The toolbar's left edge starts, stops, or restarts the selected process. Its right edge opens the site in the browser, opens the folder in Finder or Terminal, and holds Follow, Clear, and Copy All. The tabs sit in a bar under the toolbar, with a search field for the shown lines at its end. ⌘F focuses the search. To keep logs on disk as well, turn on log mirroring in **Settings**. Portside then writes `~/Library/Logs/Portside/<site>/<process>.log`, and `<command>.log` for a command.
