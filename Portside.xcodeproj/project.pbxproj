@@ -14,6 +14,7 @@
 		10DDE4F46672C65FD62C12FF /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365678D7E43493546B0296BE /* MenuBarView.swift */; };
 		124DD8BE547EA9F7784D3C22 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F20E44E4E00039E06218385 /* SettingsView.swift */; };
 		179D162FEA63DA651E510777 /* PortsideController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 088C92B744950539E4776247 /* PortsideController.swift */; };
+		1D5906474052D834643120F3 /* EditorLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0289AB1B017F0AAB95507B /* EditorLayout.swift */; };
 		1F8A7DE00CCCC386B35BBD52 /* LogTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FFFE619613302A6BE7C2CC9 /* LogTextView.swift */; };
 		2609696D4CCF72DE957A8EF4 /* ResolverSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA92A86C2BC35736B26C8BF /* ResolverSetupView.swift */; };
 		2737FA2475F14F3CF1945D85 /* caddy-empty.json in Resources */ = {isa = PBXBuildFile; fileRef = 95E46562988127AD742D4515 /* caddy-empty.json */; };
@@ -150,6 +151,7 @@
 		AE921757008CF0B17FC9AC8C /* LogBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogBuffer.swift; sourceTree = "<group>"; };
 		B062112C573C758934A8D13C /* ANSIParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ANSIParserTests.swift; sourceTree = "<group>"; };
 		B75ED958BAF6F739693E706A /* SiteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStoreTests.swift; sourceTree = "<group>"; };
+		BF0289AB1B017F0AAB95507B /* EditorLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorLayout.swift; sourceTree = "<group>"; };
 		BFF4365EECD9AC26E7D6BC95 /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
 		C4876EF5F12CB582CF7334AB /* ProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyManager.swift; sourceTree = "<group>"; };
 		CDDD204E84FBA74747C50C60 /* UpdaterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterService.swift; sourceTree = "<group>"; };
@@ -340,6 +342,7 @@
 			isa = PBXGroup;
 			children = (
 				455771B70DABAA90EBE97A36 /* CommandsEditorView.swift */,
+				BF0289AB1B017F0AAB95507B /* EditorLayout.swift */,
 				6F4A7E868EE2795961567699 /* FolderAutofill.swift */,
 				8D85F66C6944538093A05308 /* FolderPicker.swift */,
 				3715245E27D23C61B1B4A557 /* ProcessEditorView.swift */,
@@ -521,6 +524,7 @@
 				35C8770EB177C88392FACDBB /* DebugLaunch.swift in Sources */,
 				FD5664646C7870334E4E2912 /* DomainSuffix.swift in Sources */,
 				FFBE3E50133251D458D3E01D /* DomainSuffixPicker.swift in Sources */,
+				1D5906474052D834643120F3 /* EditorLayout.swift in Sources */,
 				7BB0547D240BB2968009DF70 /* EnvPortDetector.swift in Sources */,
 				EA6E4F332C7D85D0203316E0 /* FolderAutofill.swift in Sources */,
 				BD696FC1908EA6D273128BC1 /* FolderPicker.swift in Sources */,
