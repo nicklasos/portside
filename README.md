@@ -110,7 +110,7 @@ Each command gets `PORTSIDE`, `PORTSIDE_SITE`, and `PORTSIDE_URL`, the site's ma
 ## Logs
 
 <p align="center">
-  <img src="assets/screenshots/logs.png" width="720" alt="The logs window for smartcity with a tab for each of its three processes and colored Vite output">
+  <img src="assets/screenshots/logs.png" width="690" alt="The logs window for smartcity with a tab for each of its three processes and colored Vite output">
 </p>
 
 Each site has a log window with one tab per process, main process first, then a tab for each command that ran since Portside started. The window keeps the last 10,000 lines of each process and renders ANSI colors. It scrolls with new output until you scroll up. The line count sits under the window title. The toolbar's left edge starts, stops, or restarts the selected process. Its right edge opens the site in the browser, opens the folder in Finder or Terminal, and holds Follow, Clear, and Copy All. The tabs sit in a bar under the toolbar, with a search field for the shown lines at its end. ⌘F focuses the search. To keep logs on disk as well, turn on log mirroring in **Settings**. Portside then writes `~/Library/Logs/Portside/<site>/<process>.log`, and `<command>.log` for a command.
