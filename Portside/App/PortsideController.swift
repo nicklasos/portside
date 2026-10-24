@@ -60,6 +60,14 @@ final class PortsideController {
         }
 
         static var forCurrentProcess: Configuration {
+            #if DEBUG
+            if let path = UserDefaults.standard.string(forKey: "PortsideSupportDirectory") {
+                var config = Configuration.live
+                config.supportDirectory = URL(fileURLWithPath: path, isDirectory: true)
+                config.logsDirectory = config.supportDirectory.appendingPathComponent("logs", isDirectory: true)
+                return config
+            }
+            #endif
             guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil else { return .live }
             return .isolated(in: FileManager.default.temporaryDirectory.appendingPathComponent("portside-host-\(UUID().uuidString)"))
         }

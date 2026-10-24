@@ -1,19 +1,46 @@
 import AppKit
 import SwiftUI
 
+/// One tab of a site's logs window: a configured process, or a command that has run this session.
+private enum LogTab: Identifiable {
+    case process(ProcessConfig)
+    case command(SiteCommand)
+
+    var id: UUID {
+        switch self {
+        case .process(let p): p.id
+        case .command(let c): c.id
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .process(let p): p.label.isEmpty ? p.command : p.label
+        case .command(let c): c.name
+        }
+    }
+
+    func workingDirectory(in site: Site) -> String {
+        switch self {
+        case .process(let p): site.workingDirectory(for: p)
+        case .command(let c): site.workingDirectory(for: c)
+        }
+    }
+}
+
 struct LogsWindow: View {
     let siteID: Site.ID
     @Environment(PortsideController.self) private var controller
-    @State private var selection: ProcessConfig.ID?
 
     var body: some View {
         Group {
             if let site = controller.store.site(id: siteID) {
-                let current = site.processes.first { $0.id == selection } ?? site.main
+                let tabs = site.processes.map(LogTab.process) + site.commands.filter { controller.processes.hasRun($0.id) }.map(LogTab.command)
+                let current = tabs.first { $0.id == controller.logTabs[siteID] } ?? tabs[0]
                 VStack(spacing: 0) {
-                    tabStrip(site, selected: current.id)
+                    tabStrip(tabs, in: site, selected: current.id)
                     Divider()
-                    LogPane(site: site, process: current)
+                    LogPane(site: site, tab: current)
                         .id(current.id)
                 }
                 .navigationTitle("\(site.name) — Logs")
@@ -27,16 +54,21 @@ struct LogsWindow: View {
         .background(WindowFrameAutosave(name: "PortsideLogs-\(siteID.uuidString)"))
     }
 
-    private func tabStrip(_ site: Site, selected: ProcessConfig.ID) -> some View {
+    private func tabStrip(_ tabs: [LogTab], in site: Site, selected: UUID) -> some View {
         HStack(spacing: 4) {
-            ForEach(site.processes) { process in
-                let isSelected = process.id == selected
+            ForEach(tabs) { tab in
+                let isSelected = tab.id == selected
                 Button {
-                    selection = process.id
+                    controller.logTabs[siteID] = tab.id
                 } label: {
                     HStack(spacing: 6) {
-                        StatusDot(controller.processes.state(of: process.id), size: 7)
-                        Text(tabTitle(process, in: site))
+                        StatusDot(controller.processes.state(of: tab.id), size: 7)
+                        if case .command = tab {
+                            Image(systemName: "terminal")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                        Text(tabTitle(tab, in: site))
                             .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
                     }
                     .padding(.horizontal, 10)
@@ -45,7 +77,7 @@ struct LogsWindow: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .help(controller.processes.state(of: process.id).summary)
+                .help(controller.processes.state(of: tab.id).summary)
             }
             Spacer()
         }
@@ -53,7 +85,8 @@ struct LogsWindow: View {
         .padding(.vertical, 6)
     }
 
-    private func tabTitle(_ process: ProcessConfig, in site: Site) -> String {
+    private func tabTitle(_ tab: LogTab, in site: Site) -> String {
+        guard case .process(let process) = tab else { return tab.name }
         if !process.label.isEmpty { return process.label }
         if process.isStatic, process.id == site.main.id { return "Access log" }
         return process.command
@@ -62,7 +95,7 @@ struct LogsWindow: View {
 
 private struct LogPane: View {
     let site: Site
-    let process: ProcessConfig
+    let tab: LogTab
     @Environment(PortsideController.self) private var controller
     @State private var view = LogViewState()
     @State private var query = ""
@@ -71,11 +104,14 @@ private struct LogPane: View {
     @State private var accessLog: AccessLogTail?
     @FocusState private var searchFocused: Bool
 
-    private var isStaticMain: Bool { process.isStatic && process.id == site.main.id }
+    private var isStaticMain: Bool {
+        guard case .process(let process) = tab else { return false }
+        return process.isStatic && process.id == site.main.id
+    }
 
     private var buffer: LogBuffer {
         if isStaticMain, let accessLog { return accessLog.buffer }
-        return controller.processes.buffer(for: process.id)
+        return controller.processes.buffer(for: tab.id)
     }
 
     var body: some View {
@@ -135,29 +171,13 @@ private struct LogPane: View {
     }
 
     private func toolbar(lineCount: Int) -> some View {
-        let state = controller.processes.state(of: process.id)
-        return HStack(spacing: 2) {
-            if state.isAlive {
-                IconButton("stop.fill", help: isStaticMain ? "Stop serving" : "Stop \(name)") {
-                    Task { await controller.stop(process) }
-                }
-                if !process.isStatic {
-                    IconButton("arrow.clockwise", help: "Restart \(name)") {
-                        Task { await controller.restart(process, in: site) }
-                    }
-                }
-            } else {
-                IconButton("play.fill", help: isStaticMain ? "Serve folder" : "Start \(name)") {
-                    Task { await controller.start(process, in: site) }
-                }
-                .disabled(process.isStatic && !isStaticMain)
+        HStack(spacing: 2) {
+            switch tab {
+            case .process(let process): processControls(process)
+            case .command(let command): commandControls(command)
             }
-            Divider().frame(height: 16).padding(.horizontal, 4)
-            if let url = controller.url(for: site, process: process) {
-                IconButton("safari", help: "Open \(url.absoluteString)") { controller.openURL(site, process: process) }
-            }
-            IconButton("folder", help: "Reveal folder in Finder") { controller.openFolder(site.workingDirectory(for: process)) }
-            IconButton("terminal", help: "Open in Terminal") { controller.openInTerminal(site.workingDirectory(for: process)) }
+            IconButton("folder", help: "Reveal folder in Finder") { controller.openFolder(tab.workingDirectory(in: site)) }
+            IconButton("terminal", help: "Open in Terminal") { controller.openInTerminal(tab.workingDirectory(in: site)) }
 
             Spacer(minLength: 8)
 
@@ -184,6 +204,43 @@ private struct LogPane: View {
         .padding(.vertical, 5)
     }
 
+    @ViewBuilder
+    private func processControls(_ process: ProcessConfig) -> some View {
+        if controller.processes.state(of: process.id).isAlive {
+            IconButton("stop.fill", help: isStaticMain ? "Stop serving" : "Stop \(tab.name)") {
+                Task { await controller.stop(process) }
+            }
+            if !process.isStatic {
+                IconButton("arrow.clockwise", help: "Restart \(tab.name)") {
+                    Task { await controller.restart(process, in: site) }
+                }
+            }
+        } else {
+            IconButton("play.fill", help: isStaticMain ? "Serve folder" : "Start \(tab.name)") {
+                Task { await controller.start(process, in: site) }
+            }
+            .disabled(process.isStatic && !isStaticMain)
+        }
+        Divider().frame(height: 16).padding(.horizontal, 4)
+        if let url = controller.url(for: site, process: process) {
+            IconButton("safari", help: "Open \(url.absoluteString)") { controller.openURL(site, process: process) }
+        }
+    }
+
+    @ViewBuilder
+    private func commandControls(_ command: SiteCommand) -> some View {
+        if controller.isRunning(command) {
+            IconButton("stop.fill", help: "Stop \(command.name)") {
+                Task { await controller.stopCommand(command) }
+            }
+        } else {
+            IconButton("play.fill", help: "Run \(command.name)") {
+                Task { await controller.run(command, in: site) }
+            }
+        }
+        Divider().frame(height: 16).padding(.horizontal, 4)
+    }
+
     private var searchField: some View {
         HStack(spacing: 4) {
             TextField("Search shown lines", text: $query)
@@ -204,8 +261,6 @@ private struct LogPane: View {
         }
         .padding(.trailing, 4)
     }
-
-    private var name: String { process.label.isEmpty ? process.command : process.label }
 
     private func clear() {
         buffer.clear()
